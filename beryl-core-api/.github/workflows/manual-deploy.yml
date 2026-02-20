@@ -1,0 +1,72 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+        type: string
+      rollback:
+        description: 'Rollback to previous version'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  manual-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v3
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+    - name: Update deployment image
+      run: |
+        if [ "${{ inputs.rollback }}" = "true" ]; then
+          echo "Performing rollback..."
+          kubectl rollout undo deployment/beryl-core-api -n default
+        else
+          echo "Deploying image: ${{ inputs.image_tag }}"
+          # Update deployment with new image tag
+          kubectl set image deployment/beryl-core-api beryl-core-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.image_tag }} -n default
+        fi
+
+    - name: Wait for rollout
+      run: |
+        kubectl rollout status deployment/beryl-core-api -n default --timeout=300s
+
+    - name: Verify deployment
+      run: |
+        # Check pod status
+        kubectl get pods -l app=beryl-core-api -n default
+
+        # Check service endpoints
+        kubectl get endpoints beryl-core-api -n default
+
+        # Health check
+        kubectl exec -it deployment/beryl-core-api -n default -- curl -f http://localhost:8000/health || exit 1
+
+    - name: Notify deployment completion
+      run: |
+        echo "Deployment to ${{ inputs.environment }} completed successfully"
+        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.image_tag }}"

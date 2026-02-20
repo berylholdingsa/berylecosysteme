@@ -1,0 +1,43 @@
+# ========================
+# Python
+# ========================
+.venv/
+venv/
+__pycache__/
+*.pyc
+.coverage
+
+# ========================
+# Android / Gradle / IDE
+# ========================
+.idea/
+.gradle/
+build/
+local.properties
+*.iml
+
+# ========================
+# Logs
+# ========================
+*.log
+
+# ========================
+# OS
+# ========================
+.DS_Store
+# Gradle user cache
+.gradle-user/
+# Gradle
+.gradle/
+.gradle-user/
+build/
+**/build/
+
+# Android
+local.properties
+.idea/
+*.iml
+
+# Caches
+caches/
+wrapper/

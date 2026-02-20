@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Beryl.Splash" parent="Theme.BerylAndroid">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/beryl_splash_logo_scaled</item>
+        <item name="android:windowBackground">@drawable/beryl_splash_background</item>
+    </style>
+
+    <style name="Theme.BerylAndroid" parent="android:Theme.Material.Light.NoActionBar" />
+
+
+    <!-- <style name="Theme.BerylAndroid" parent="Theme.Material3.DayNight.NoActionBar" /> -->
+</resources>

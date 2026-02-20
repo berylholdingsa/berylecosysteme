@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: beryl-config
+  namespace: default
+data:
+  # Application Configuration
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+
+  # Metrics Configuration
+  METRICS_ENABLED: "true"
+
+  # Tracing Configuration
+  TRACING_ENABLED: "true"
+  JAEGER_HOST: "jaeger-collector.beryl-monitoring.svc.cluster.local"
+  JAEGER_PORT: "14268"
+  ZIPKIN_ENDPOINT: "http://tempo.beryl-monitoring.svc.cluster.local:9411/api/v2/spans"
+
+  # Audit Configuration
+  AUDIT_ENABLED: "true"
+  AUDIT_LOG_FILE: "/var/log/beryl/audit.log"
+
+  # Event Bus Configuration
+  EVENT_BUS: "kafka"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka.beryl-infrastructure.svc.cluster.local:9092"
+
+  # External APIs (will be overridden by secrets for sensitive data)
+  FINTECH_API_URL: "https://api.fintech.beryl.internal"
+  MOBILITY_API_URL: "https://api.mobility.beryl.internal"
+  ESG_API_URL: "https://api.esg.beryl.internal"
+  SOCIAL_API_URL: "https://api.social.beryl.internal"
+
+  # Database Configuration (non-sensitive)
+  DATABASE_URL: "postgresql://beryl_user@beryl-postgres.beryl-infrastructure.svc.cluster.local:5432/beryl_db"
+
+  # Redis Configuration
+  REDIS_URL: "redis://beryl-redis.beryl-infrastructure.svc.cluster.local:6379"
+
+  # JWT Configuration (algorithm is not sensitive)
+  JWT_ALGORITHM: "RS256"
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+
+  # Rate Limiting
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "1000"
+
+  # Observability
+  PROMETHEUS_METRICS_PORT: "9090"
+  HEALTH_CHECK_INTERVAL: "30"
+
+  # Feature Flags
+  GRAPHQL_ENABLED: "true"
+  EVENT_DRIVEN_ENABLED: "true"
+  MULTI_DOMAIN_ENABLED: "true"

@@ -1,0 +1,145 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-api-gateway-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: beryl-core-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow traffic from GraphQL gateway
+  - from:
+    - podSelector:
+        matchLabels:
+          app: graphql-gateway
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow health checks from kube-system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow HTTPS outbound (for external APIs)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow traffic to event bus
+  - to:
+    - podSelector:
+        matchLabels:
+          app: event-bus
+    ports:
+    - protocol: TCP
+      port: 9092
+  # Allow traffic to databases
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: graphql-gateway-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: graphql-gateway
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow traffic to beryl-core-api
+  - to:
+    - podSelector:
+        matchLabels:
+          app: beryl-core-api
+    ports:
+    - protocol: TCP
+      port: 8000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: event-bus-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: event-bus
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from beryl-core-api
+  - from:
+    - podSelector:
+        matchLabels:
+          app: beryl-core-api
+    ports:
+    - protocol: TCP
+      port: 9092
+  # Allow traffic from monitoring
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: beryl-monitoring
+    ports:
+    - protocol: TCP
+      port: 9092
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53

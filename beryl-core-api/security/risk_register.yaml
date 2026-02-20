@@ -1,0 +1,51 @@
+version: 1.0
+owner: ciso-office
+updated_at: 2026-02-11
+risks:
+  - id: RISK-001
+    domain: fintech-core
+    title: Unsigned financial events accepted
+    likelihood: medium
+    impact: critical
+    controls:
+      - HMAC signature validation before publish and consume
+      - DLQ routing on validation failure
+    residual_risk: low
+  - id: RISK-002
+    domain: authentication
+    title: Compromised JWT signing key
+    likelihood: medium
+    impact: critical
+    controls:
+      - JWT key ring with rotation and grace period
+      - Strict key management from environment
+    residual_risk: medium
+  - id: RISK-003
+    domain: audit
+    title: Tampering with audit evidence
+    likelihood: low
+    impact: critical
+    controls:
+      - Append-only audit table
+      - Hash-chain integrity verification
+      - HMAC signature per audit record
+    residual_risk: low
+  - id: RISK-004
+    domain: payments
+    title: Replay attack on payment endpoints
+    likelihood: medium
+    impact: high
+    controls:
+      - Nonce + timestamp validation
+      - Redis-backed replay cache
+    residual_risk: low
+  - id: RISK-005
+    domain: availability
+    title: Kafka broker outage
+    likelihood: medium
+    impact: high
+    controls:
+      - Exponential backoff retries
+      - DLQ per topic
+      - Outbox relay and replay procedure
+    residual_risk: medium

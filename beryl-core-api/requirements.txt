@@ -1,0 +1,13 @@
+fastapi==0.109.0
+uvicorn[standard]==0.23.2
+pydantic==2.6.2
+pydantic-settings==2.0.3
+SQLAlchemy==2.0.36
+python-jose==3.3.0
+passlib[bcrypt]==1.7.4
+redis==5.0.1
+prometheus-client==0.21.1
+opentelemetry-exporter-otlp==1.39.1
+kafka-python==2.0.2
+cryptography==44.0.2
+psycopg2-binary==2.9.11

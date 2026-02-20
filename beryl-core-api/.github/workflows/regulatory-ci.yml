@@ -1,0 +1,151 @@
+name: Regulatory CI (ISO/Bank-Grade Hardened)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  regulatory-hardening:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:///./ci.db
+      ENVIRONMENT: test
+      EVENT_BUS: mock
+      METRICS_ENABLED: "true"
+      TRACING_ENABLED: "false"
+      CORRELATION_ID_REQUIRED: "true"
+      SECRETS_BACKEND: mock
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-interaction --no-root
+          poetry run pip install bandit pip-audit detect-secrets
+
+      - name: Security Scan (Bandit)
+        run: |
+          poetry run bandit -q -r src -ll
+
+      - name: Dependency Audit
+        run: |
+          poetry run pip-audit --strict
+
+      - name: Secret Scan
+        run: |
+          detect-secrets scan --all-files > /tmp/secrets.baseline
+          test -s /tmp/secrets.baseline
+
+      - name: Infrastructure validation
+        run: |
+          required=(
+            infra/docker-compose.prod.yml
+            infra/docker-compose.staging.yml
+            infra/kafka-cluster-ha.yml
+            infra/postgres-ha.yml
+            infra/alertmanager.yml
+            infra/prometheus-alert-rules.yml
+            infra/vault-policy.hcl
+            infra/key-rotation-cron.sh
+            staging/run_staging_compliance_suite.sh
+            tools/BankAuditSimulator.py
+            chaos/high-load-test.sh
+          )
+          for path in "${required[@]}"; do
+            [[ -f "$path" ]] || { echo "Missing required file: $path"; exit 1; }
+          done
+
+      - name: Alert rule validation
+        run: |
+          rules=(
+            KafkaConsumerLagCritical
+            DLQEventCritical
+            AuditIntegrityFailure
+            AMLSpikeAnomaly
+            SignatureFailureAnomaly
+            PSPReplayDetectionAnomaly
+          )
+          for rule in "${rules[@]}"; do
+            grep -q "$rule" monitoring/alerts/regulatory-alerts.yml || { echo "Missing monitoring alert rule: $rule"; exit 1; }
+            grep -q "$rule" infra/prometheus-alert-rules.yml || { echo "Missing infra alert rule: $rule"; exit 1; }
+          done
+
+      - name: Compliance Integrity Tests
+        run: |
+          poetry run pytest -q tests/regulatory/test_compliance_integrity.py
+
+      - name: Audit Chain Integrity Tests
+        run: |
+          poetry run pytest -q tests/regulatory/test_audit_chain_integrity.py
+
+      - name: Chaos Tests
+        run: |
+          poetry run pytest -q tests/regulatory/test_chaos_scenarios.py
+
+      - name: BFOS integrity test
+        run: |
+          poetry run pytest -q tests/bfos
+
+      - name: BFOS Statement Integrity Test
+        run: |
+          poetry run pytest -q tests/bfos/accounting
+
+      - name: BFOS Tontine Integrity Test
+        run: |
+          poetry run pytest -q tests/bfos/tontine
+
+      - name: Key rotation simulation
+        run: |
+          SIMULATE=true \
+          FORCE_ROTATE=true \
+          KEY_ROTATION_STATE_FILE=/tmp/beryl-ci-key-rotation-state.json \
+          MOCK_SECRETS_FILE=/tmp/beryl-ci-secrets.json \
+          bash infra/key-rotation-cron.sh
+          test -f /tmp/beryl-ci-key-rotation-state.json
+
+      - name: BankAuditSimulator execution
+        run: |
+          poetry run python tools/BankAuditSimulator.py \
+            --strict \
+            --require-score 100 \
+            --output docs/audit_simulation/bank_audit_report.json
+
+      - name: Staging suite execution
+        run: |
+          SUITE_MODE=simulation \
+          REPORT_PATH=staging/reports/staging_compliance_report.json \
+          bash staging/run_staging_compliance_suite.sh
+          poetry run python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('staging/reports/staging_compliance_report.json').read_text(encoding='utf-8'))
+          if report.get('overall_status') != 'passed':
+              raise SystemExit('Staging compliance suite failed')
+          PY
+
+      - name: High load test (simulation mode)
+        run: |
+          bash chaos/high-load-test.sh --simulation --strict --report scaling/reports/high_load_report.json
+          poetry run python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('scaling/reports/high_load_report.json').read_text(encoding='utf-8'))
+          if report.get('status') != 'passed':
+              raise SystemExit('High load integrity failed')
+          PY
+
+      - name: Enforce Architecture Score
+        run: |
+          poetry run python tools/ArchitectureAudit.py --strict --require-score 100

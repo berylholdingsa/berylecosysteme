@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "audit_generated.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "topic",
+    "schema_version",
+    "emitted_at",
+    "correlation_id",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "topic": { "const": "audit_generated.v1" },
+    "schema_version": { "const": "v1" },
+    "emitted_at": { "type": "string", "format": "date-time" },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit_id",
+        "window",
+        "methodology_id",
+        "model_version",
+        "report_hash",
+        "trips_count",
+        "total_distance_km",
+        "total_co2_avoided_kg",
+        "generated_at"
+      ],
+      "properties": {
+        "audit_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "window": { "type": "string", "enum": ["3M", "6M", "12M"] },
+        "country_code": { "type": ["string", "null"], "minLength": 2, "maxLength": 2 },
+        "methodology_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "model_version": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "report_hash": { "type": "string", "minLength": 32, "maxLength": 128 },
+        "trips_count": { "type": "integer", "minimum": 0 },
+        "total_distance_km": { "type": "number" },
+        "total_co2_avoided_kg": { "type": "number" },
+        "generated_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

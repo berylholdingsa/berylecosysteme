@@ -1,0 +1,49 @@
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@
+-<string name="default_web_client_id">
+-
+-        372110462641-tgd98t7266qsjo9ojr9m90jr1s79gnnp.apps.googleusercontent.com
+-<string name="default_web_client_id">372110462641-tgd98t7266qsjo9ojr9m90jr1s79gnnp.apps.googleusercontent.com</string>
++<string name="default_web_client_id">372110462641-tgd98t7266qsjo9ojr9m90jr1s79gnnp.apps.googleusercontent.com</string>
+
+@@
+-<string name="kyc_doc_id">Carte d’identité / passeport</string>
++<string name="kyc_doc_id">Carte d'identité / passeport</string>
+
+@@
+-<string name="kyc_doc_address">Justificatif d’adresse</string>
++<string name="kyc_doc_address">Justificatif d'adresse</string>
+
+@@
+-<string name="esg_impact_index_subtitle">Indice d’impact</string>
++<string name="esg_impact_index_subtitle">Indice d'impact</string>
+
+@@
+-<string name="login_no_account">Vous n’avez pas de compte ?</string>
++<string name="login_no_account">Vous n'avez pas de compte ?</string>
+
+@@
+-<string name="chat_blocked_message">Votre profil présente un risque élevé. L’action refusée est protégée par l’orchestrateur AOQ.</string>
++<string name="chat_blocked_message">Votre profil présente un risque élevé. L'action refusée est protégée par l'orchestrateur AOQ.</string>
+
+@@
+-<string name="chat_status_typing">En train d’écrire…</string>
++<string name="chat_status_typing">En train d'écrire…</string>
+
+@@
+-<string name="mobility_estimated_savings">Économie d'énergie estimée : 18%</string>
++<string name="mobility_estimated_savings">Économie d'énergie estimée : 18%%</string>
+--- a/app/src/main/res/values-en/strings.xml
++++ b/app/src/main/res/values-en/strings.xml
+@@
+-<string name="default_web_client_id">
+-
+-        372110462641-tgd98t7266qsjo9ojr9m90jr1s79gnnp.apps.googleusercontent.com
+-<string name="default_web_client_id">372110462641-tgd98t7266qsjo9ojr9m90jr1s79gnnp.apps.googleusercontent.com</string>
++<string name="default_web_client_id">372110462641-tgd98t7266qsjo9ojr9m90jr1s79gnnp.apps.googleusercontent.com</string>
+
+@@
+-<string name="mobility_estimated_savings">Estimated energy savings: 18%</string>
++<string name="mobility_estimated_savings">Estimated energy savings: 18%%</string>
+

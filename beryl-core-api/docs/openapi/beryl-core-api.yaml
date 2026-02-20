@@ -1,0 +1,157 @@
+openapi: 3.1.0
+info:
+  title: Béryl Écosystème Core API
+  description: |
+    Plateforme unifiée desservant Béryl E-Mobility, Béryl Pay et Béryl Social.
+    Ce document couvre les endpoints REST et gRPC exposés via la gateway.
+  version: 1.0.0
+servers:
+  - url: https://api.beryl.eco
+    description: Gateway publique renforcée Zero Trust
+security:
+  - OAuth2Security:
+      - beryl.user
+      - beryl.partner
+      - beryl.admin
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: Génère un JWT après validation OAuth2
+      description: |
+        Authentifie l'utilisateur contre le provider OAuth2 (PKCE recommandé).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - client_id
+                - username
+                - password
+            example:
+              client_id: beryl-mobile
+              username: user@mail.com
+              password: Sup3rS3cret!
+      responses:
+        '200':
+          description: Jeton d'accès et refresh token (RS256 + AES-256 wrapped)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                  expires_in:
+                    type: integer
+                  refresh_token:
+                    type: string
+              examples:
+                success:
+                  value:
+                    access_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                    token_type: Bearer
+                    expires_in: 1800
+                    refresh_token: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+  /api/v1/fintech/payments:
+    get:
+      summary: Liste les paiements autorisés
+      description: |
+        Réservé aux rôles `admin` et `partner`. Le header `Authorization` contient le JWT.
+      security:
+        - OAuth2Security: [beryl.admin, beryl.partner]
+      responses:
+        '200':
+          description: Paiements retournés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentList'
+  /api/v1/mobility/demand:
+    get:
+      summary: Prévision de la demande de mobilité
+      security:
+        - OAuth2Security: [beryl.user]
+      responses:
+        '200':
+          description: Données de demande
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    type: string
+                  predicted_demand:
+                    type: number
+                  confidence:
+                    type: number
+                  time_window:
+                    type: string
+  /api/v1/social/recommendations:
+    get:
+      summary: Suggestions basées sur IA comportementale
+      responses:
+        '200':
+          description: Liste de recommandations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recommendations'
+components:
+  securitySchemes:
+    OAuth2Security:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://identity.beryl.local/oauth2/token
+          scopes:
+            beryl.user: Accès utilisateur
+            beryl.partner: Accès partenaire
+            beryl.admin: Accès administrateur
+  schemas:
+    Payment:
+      type: object
+      properties:
+        payment_id:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, settled, failed]
+    PaymentList:
+      type: object
+      properties:
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        count:
+          type: integer
+    Recommendations:
+      type: object
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: string
+        context:
+          type: object
+          properties:
+            confidence:
+              type: number
+            ai_model:
+              type: string

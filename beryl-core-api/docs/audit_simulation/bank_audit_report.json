@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-02-12T11:22:17.223599+00:00",
+  "simulator": "BankAuditSimulator",
+  "total_weight": 100,
+  "passed_weight": 100,
+  "score": 100,
+  "bank_compliance": "PASS",
+  "checks": [
+    {
+      "name": "policies_existence",
+      "passed": true,
+      "weight": 20,
+      "details": {
+        "required": [
+          "infra/vault-policy.hcl",
+          "docs/audit_simulation/politique_gestion_cles.md",
+          "docs/audit_simulation/politique_separation_acces.md",
+          "security/access_control_policy.md",
+          "docs/regulatory/key_rotation_procedure.md"
+        ],
+        "missing": []
+      }
+    },
+    {
+      "name": "key_rotation_active",
+      "passed": true,
+      "weight": 20,
+      "details": {
+        "script_ok": true,
+        "config_ok": true,
+        "execution": {
+          "command": "bash infra/key-rotation-cron.sh",
+          "exit_code": 0,
+          "duration_ms": 119,
+          "stdout_tail": [
+            "{\"event\":\"key_rotation\",\"status\":\"simulated\",\"message\":\"simulation mode enabled\",\"timestamp\":\"2026-02-12T11:21:33Z\"}",
+            "{\"event\":\"key_rotation\",\"status\":\"rotated\",\"message\":\"automatic 90-day key rotation completed\",\"timestamp\":\"2026-02-12T11:21:33Z\"}"
+          ],
+          "stderr_tail": []
+        }
+      }
+    },
+    {
+      "name": "alerting_active",
+      "passed": true,
+      "weight": 20,
+      "details": {
+        "required_alerts": [
+          "KafkaConsumerLagCritical",
+          "DLQEventCritical",
+          "AuditIntegrityFailure",
+          "AMLSpikeAnomaly",
+          "SignatureFailureAnomaly",
+          "PSPReplayDetectionAnomaly"
+        ],
+        "alerts_in_monitoring": [
+          "KafkaConsumerLagCritical",
+          "DLQEventCritical",
+          "AuditIntegrityFailure",
+          "AMLSpikeAnomaly",
+          "SignatureFailureAnomaly",
+          "PSPReplayDetectionAnomaly"
+        ],
+        "alerts_in_infra": [
+          "KafkaConsumerLagCritical",
+          "DLQEventCritical",
+          "AuditIntegrityFailure",
+          "AMLSpikeAnomaly",
+          "SignatureFailureAnomaly",
+          "PSPReplayDetectionAnomaly"
+        ],
+        "webhook_configured": true
+      }
+    },
+    {
+      "name": "staging_operational",
+      "passed": true,
+      "weight": 20,
+      "details": {
+        "missing": [],
+        "executable": true,
+        "execution": {
+          "command": "bash staging/run_staging_compliance_suite.sh",
+          "exit_code": 0,
+          "duration_ms": 36639,
+          "stdout_tail": [
+            "{\"event\":\"dataset_validation\",\"status\":\"passed\",\"detail\":\"all staging datasets found\",\"timestamp\":\"2026-02-12T11:21:33Z\"}",
+            "{\"event\":\"chaos_test\",\"status\":\"passed\",\"detail\":\"step completed\",\"timestamp\":\"2026-02-12T11:21:40Z\"}",
+            "{\"event\":\"compliance_test\",\"status\":\"passed\",\"detail\":\"step completed\",\"timestamp\":\"2026-02-12T11:21:48Z\"}",
+            "{\"event\":\"audit_integrity_test\",\"status\":\"passed\",\"detail\":\"step completed\",\"timestamp\":\"2026-02-12T11:21:54Z\"}",
+            "{\"event\":\"risk_scoring_test\",\"status\":\"passed\",\"detail\":\"step completed\",\"timestamp\":\"2026-02-12T11:22:02Z\"}",
+            "{\"event\":\"dlq_behavior_test\",\"status\":\"passed\",\"detail\":\"step completed\",\"timestamp\":\"2026-02-12T11:22:09Z\"}",
+            "{\"event\": \"staging_suite_report\", \"report\": \"/home/generalhaypi/beryl_ecosysteme/beryl-core-api/staging/reports/staging_compliance_report.json\", \"score\": 100}"
+          ],
+          "stderr_tail": []
+        },
+        "report_status": "passed",
+        "report_score": 100
+      }
+    },
+    {
+      "name": "audit_chain_integrity",
+      "passed": true,
+      "weight": 20,
+      "details": {
+        "service_ok": true,
+        "execution": {
+          "command": "poetry run pytest -q tests/regulatory/test_audit_chain_integrity.py",
+          "exit_code": 0,
+          "duration_ms": 7463,
+          "stdout_tail": [
+            ".                                                                        [100%]",
+            "=============================== warnings summary ===============================",
+            ".venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854",
+            "  /home/generalhaypi/beryl_ecosysteme/beryl-core-api/.venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13",
+            "    from crypt import crypt as _crypt",
+            "",
+            "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+            "1 passed, 1 warning in 0.03s"
+          ],
+          "stderr_tail": []
+        }
+      }
+    }
+  ]
+}

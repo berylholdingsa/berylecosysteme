@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "beryl-core-api"
+version = "0.1.0"
+description = "Central API Gateway and orchestration layer for Béryl ecosystem"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0"
+pydantic-settings = "^2.0.0"
+sqlalchemy = "^2.0.23"
+alembic = "^1.13.1"
+httpx = "0.28.1"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+python-multipart = "^0.0.6"
+redis = "^5.0.1"
+celery = "^5.3.4"
+graphene = "^3.3"
+prometheus-client = "^0.19.0"
+opentelemetry-distro = "^0.43b0"
+protobuf = ">=4.21.3"
+firebase-admin = "^7.1.0"
+psycopg2-binary = "^2.9.11"
+opentelemetry-exporter-otlp = "^1.39.1"
+kafka-python = "^2.0.2"
+cryptography = "^44.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-cov = "^4.1.0"
+black = "^23.11.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

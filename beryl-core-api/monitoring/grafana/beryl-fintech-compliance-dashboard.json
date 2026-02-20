@@ -1,0 +1,58 @@
+{
+  "title": "Beryl Fintech Compliance Dashboard",
+  "uid": "beryl-fintech-compliance",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Risk Score Distribution",
+      "type": "timeseries",
+      "targets": [{ "expr": "beryl_fintech_risk_score_avg" }]
+    },
+    {
+      "id": 2,
+      "title": "AML Flagged Transactions",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum(aml_flagged_total)" }]
+    },
+    {
+      "id": 3,
+      "title": "Audit Write Latency (ms)",
+      "type": "timeseries",
+      "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(beryl_audit_write_latency_ms_bucket[5m])) by (le))" }]
+    },
+    {
+      "id": 4,
+      "title": "DLQ Count",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum(dlq_events_total)" }]
+    },
+    {
+      "id": 5,
+      "title": "Consumer Lag",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum(kafka_consumer_lag)" }]
+    },
+    {
+      "id": 6,
+      "title": "Payment Throughput",
+      "type": "timeseries",
+      "targets": [{ "expr": "rate(beryl_financial_transactions_total[1m])" }]
+    },
+    {
+      "id": 7,
+      "title": "Error Rate %",
+      "type": "timeseries",
+      "targets": [{ "expr": "100 * sum(rate(beryl_errors_total[5m])) / clamp_min(sum(rate(beryl_http_requests_total[5m])), 1)" }]
+    },
+    {
+      "id": 8,
+      "title": "Signature Validation Failures",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum(signature_validation_failures_total)" }]
+    }
+  ]
+}

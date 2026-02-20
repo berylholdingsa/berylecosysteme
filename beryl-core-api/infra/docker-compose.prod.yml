@@ -1,0 +1,79 @@
+version: "3.9"
+
+name: beryl-prod
+
+services:
+  beryl-core-api:
+    image: "${BERYL_CORE_API_IMAGE:?BERYL_CORE_API_IMAGE is required}"
+    container_name: beryl-core-api-prod
+    restart: unless-stopped
+    ports:
+      - "${PROD_API_PORT:-8000}:8000"
+    environment:
+      ENVIRONMENT: production
+      EVENT_BUS: kafka
+      KAFKA_ENVIRONMENT: production
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      KAFKA_MANUAL_COMMIT_ONLY: "true"
+      KAFKA_CONSUMER_GROUP_PREFIX: beryl-core
+      DATABASE_URL: "${DATABASE_URL:?injected by secret manager}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:?injected by secret manager}"
+      AUDIT_SECRET_KEY: "${AUDIT_SECRET_KEY:?injected by secret manager}"
+      EVENT_HMAC_SECRET: "${EVENT_HMAC_SECRET:?injected by secret manager}"
+      PSP_WEBHOOK_HMAC_SECRET: "${PSP_WEBHOOK_HMAC_SECRET:?injected by secret manager}"
+      AES256_KEY_B64: "${AES256_KEY_B64:?injected by secret manager}"
+      SECRETS_BACKEND: "${SECRETS_BACKEND:-vault}"
+      SECRETS_CONFIG_PATH: "${SECRETS_CONFIG_PATH:-/etc/beryl/secrets/manifest.json}"
+      METRICS_ENABLED: "true"
+      TRACING_ENABLED: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - pgpool
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - beryl-prod-net
+
+  prometheus:
+    image: prom/prometheus:v2.53.2
+    container_name: beryl-prometheus-prod
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/alerts:/etc/prometheus/alerts:ro
+      - ./prometheus-alert-rules.yml:/etc/prometheus/infra-prometheus-alert-rules.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - beryl-core-api
+      - alertmanager
+    networks:
+      - beryl-prod-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: beryl-alertmanager-prod
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--log.level=info"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - beryl-prod-net
+
+networks:
+  beryl-prod-net:
+    name: beryl-prod-net
+    driver: bridge

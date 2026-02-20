@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "372110462641",
+    "project_id": "berylandroid-61a81",
+    "storage_bucket": "berylandroid-61a81.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:372110462641:android:8a1796f7ce4ffbf0275c90",
+        "android_client_info": {
+          "package_name": "com.beryl.berylandroid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiP6JUu5ZI8pYtTen3NLRzRpbT1OzR4-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

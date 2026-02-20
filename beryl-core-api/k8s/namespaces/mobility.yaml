@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: beryl-mobility
+  labels:
+    name: beryl-mobility
+    domain: mobility
+    environment: production
+    team: mobility
+    cost-center: mobility-operations
+spec:
+  finalizers:
+  - kubernetes

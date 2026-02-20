@@ -1,0 +1,12 @@
+# Alertmanager webhook simulation configuration reference.
+# Endpoint provided by infra/docker-compose.staging.yml service `alert-webhook-simulator`.
+
+simulation:
+  enabled: true
+  endpoint: http://alert-webhook-simulator:8080/mock-alert-webhook
+  expected_payload_fields:
+    - receiver
+    - status
+    - alerts
+    - groupLabels
+    - commonAnnotations

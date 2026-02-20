@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: beryl-esg
+  labels:
+    name: beryl-esg
+    domain: esg
+    environment: production
+    team: esg
+    cost-center: esg-operations
+spec:
+  finalizers:
+  - kubernetes

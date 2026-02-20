@@ -1,0 +1,40 @@
+{
+  "positive_cases": [
+    {
+      "case_id": "aml-pos-001",
+      "actor_id": "cust-anon-002",
+      "amount": 2500000.0,
+      "velocity_per_hour": 32,
+      "sanction_hit": false,
+      "expected_flag": true,
+      "rationale": "high_amount_threshold"
+    },
+    {
+      "case_id": "aml-pos-002",
+      "actor_id": "cust-anon-007",
+      "amount": 9000.0,
+      "velocity_per_hour": 2,
+      "sanction_hit": true,
+      "expected_flag": true,
+      "rationale": "sanction_list_match"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case_id": "aml-neg-001",
+      "actor_id": "cust-anon-001",
+      "amount": 980.0,
+      "velocity_per_hour": 1,
+      "sanction_hit": false,
+      "expected_flag": false
+    },
+    {
+      "case_id": "aml-neg-002",
+      "actor_id": "cust-anon-003",
+      "amount": 1450.0,
+      "velocity_per_hour": 2,
+      "sanction_hit": false,
+      "expected_flag": false
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: beryl-admission-controller-sa
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: beryl-admission-controller-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "deployments", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingwebhookconfigurations"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: beryl-admission-controller-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: beryl-admission-controller-role
+subjects:
+- kind: ServiceAccount
+  name: beryl-admission-controller-sa
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beryl-admission-controller
+  namespace: kube-system
+  labels:
+    app: beryl-admission-controller
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: beryl-admission-controller
+  template:
+    metadata:
+      labels:
+        app: beryl-admission-controller
+    spec:
+      serviceAccountName: beryl-admission-controller-sa
+      containers:
+      - name: admission-controller
+        image: beryl/admission-controller:latest
+        ports:
+        - containerPort: 8443
+          name: webhook
+        env:
+        - name: TLS_CERT_FILE
+          value: "/etc/webhook/certs/tls.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/webhook/certs/tls.key"
+        volumeMounts:
+        - name: webhook-certs
+          mountPath: /etc/webhook/certs
+          readOnly: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: webhook-certs
+        secret:
+          secretName: beryl-webhook-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: beryl-admission-controller-service
+  namespace: kube-system
+spec:
+  selector:
+    app: beryl-admission-controller
+  ports:
+  - port: 443
+    targetPort: 8443
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: beryl-zero-trust-webhook
+webhooks:
+- name: zero-trust-validator.beryl-ecosystem.com
+  clientConfig:
+    service:
+      name: beryl-admission-controller-service
+      namespace: kube-system
+      path: "/validate"
+    caBundle: LS0tLS1CRUdJTi...  # CA certificate bundle
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["apps"]
+    apiVersions: ["v1"]
+    resources: ["deployments"]
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: [""]
+    apiVersions: ["v1"]
+    resources: ["pods"]
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: [""]
+    apiVersions: ["v1"]
+    resources: ["configmaps", "secrets"]
+  sideEffects: None
+  admissionReviewVersions: ["v1", "v1beta1"]

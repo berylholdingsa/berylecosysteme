@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-backup-secret
+  namespace: default
+stringData:
+  POSTGRES_HOST: postgres-payments
+  POSTGRES_DB: beryl_payments
+  POSTGRES_USER: backup_user
+  POSTGRES_PASSWORD: SuperBackupPassw0rd
+type: Opaque
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-backup-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: standard
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-payments-backup
+  namespace: default
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pg-backup
+              image: postgres:16
+              envFrom:
+                - secretRef:
+                    name: postgres-backup-secret
+              env:
+                - name: BACKUP_BUCKET
+                  value: s3://beryl-backups/postgres
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  timestamp=$(date -u +"%Y%m%dT%H%M%SZ")
+                  backup_file=/backups/beryl-payments-$timestamp.sql.gz.enc
+                  export PGPASSWORD=$POSTGRES_PASSWORD
+                  pg_dump --host "$POSTGRES_HOST" --dbname "$POSTGRES_DB" --username "$POSTGRES_USER" --format=custom --no-owner --no-acl | \
+                    gzip | \
+                    openssl enc -aes-256-gcm -salt -pbkdf2 -pass pass:"$POSTGRES_PASSWORD" -out "$backup_file"
+                  ls -al /backups
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: postgres-backup-pvc

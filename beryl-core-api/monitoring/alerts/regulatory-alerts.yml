@@ -1,0 +1,62 @@
+groups:
+  - name: beryl-regulatory-active-alerting
+    rules:
+      - alert: KafkaConsumerLagCritical
+        expr: max by (group) (kafka_consumer_lag) > 1000
+        for: 2m
+        labels:
+          severity: critical
+          domain: fintech
+        annotations:
+          summary: Kafka consumer lag critical
+          description: "Consumer lag exceeded threshold; verify broker health and consumer throughput."
+
+      - alert: DLQEventCritical
+        expr: increase(dlq_events_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          domain: fintech
+        annotations:
+          summary: DLQ event critical
+          description: "DLQ received messages in the last 5 minutes."
+
+      - alert: AuditIntegrityFailure
+        expr: increase(audit_integrity_failures_total[5m]) > 0
+        for: 30s
+        labels:
+          severity: critical
+          domain: fintech
+        annotations:
+          summary: Audit integrity failure
+          description: "Immutable audit chain check failed."
+
+      - alert: AMLSpikeAnomaly
+        expr: increase(aml_flagged_total[10m]) > 25
+        for: 2m
+        labels:
+          severity: critical
+          domain: compliance
+        annotations:
+          summary: AML spike anomaly
+          description: "AML flagged transaction volume exceeded expected baseline."
+
+      - alert: SignatureFailureAnomaly
+        expr: increase(signature_validation_failures_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: critical
+          domain: security
+        annotations:
+          summary: Signature failure anomaly
+          description: "HMAC/signature validation failures above anomaly threshold."
+
+      - alert: PSPReplayDetectionAnomaly
+        expr: increase(security_incident_total{reason=~"replay|nonce_reuse|duplicate_psp_notification"}[10m]) > 0
+        for: 30s
+        labels:
+          severity: critical
+          domain: security
+        annotations:
+          summary: PSP replay detection anomaly
+          description: "Replay-attack pattern detected on PSP webhook flow."

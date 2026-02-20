@@ -1,0 +1,46 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@beryl-ecosystem.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: beryl-tls-cert
+  namespace: default
+spec:
+  secretName: beryl-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - api.beryl-ecosystem.com
+  - graphql.beryl-ecosystem.com
+  - monitoring.beryl-ecosystem.com
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: beryl-internal-tls
+  namespace: default
+spec:
+  secretName: beryl-internal-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - beryl-core-api.default.svc.cluster.local
+  - graphql-gateway.default.svc.cluster.local
+  - event-bus.default.svc.cluster.local

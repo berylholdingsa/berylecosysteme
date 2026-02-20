@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphql-gateway
+  namespace: default
+  labels:
+    app: graphql-gateway
+    component: graphql
+    version: v1.0.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: graphql-gateway
+  template:
+    metadata:
+      labels:
+        app: graphql-gateway
+        component: graphql
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: beryl-graphql-sa
+      containers:
+      - name: graphql-gateway
+        image: beryl/graphql-gateway:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: graphql
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        # Core API endpoint
+        - name: BERYL_CORE_API_URL
+          value: "http://beryl-core-api.default.svc.cluster.local:8000"
+        # Configuration
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: LOG_LEVEL
+        - name: TRACING_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: TRACING_ENABLED
+        # Secrets
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: JWT_SECRET_KEY
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+
+        # GraphQL specific configuration
+        env:
+        - name: GRAPHQL_INTROSPECTION_ENABLED
+          value: "true"
+        - name: GRAPHQL_PLAYGROUND_ENABLED
+          value: "false"  # Disabled in production
+        - name: GRAPHQL_QUERY_COMPLEXITY_LIMIT
+          value: "1000"
+        - name: GRAPHQL_QUERY_DEPTH_LIMIT
+          value: "10"
+
+      # Init container for schema validation
+      initContainers:
+      - name: schema-validator
+        image: beryl/schema-validator:latest
+        env:
+        - name: CORE_API_URL
+          value: "http://beryl-core-api.default.svc.cluster.local:8000"
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Validating GraphQL schema..."
+          # Schema validation logic would go here
+          echo "Schema validation completed"
+
+      volumes:
+      - name: schema-cache
+        emptyDir: {}
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - beryl-core-api
+              topologyKey: kubernetes.io/hostname

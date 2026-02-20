@@ -1,0 +1,32 @@
+{
+  // === Codex Configuration ===
+  "codex.enable": true,
+  "codex.mode": "workspace",
+  "codex.context.scope": "workspace",
+  "codex.context.depth": "full",
+  "codex.inlineSuggestions": true,
+  "codex.autocomplete": true,
+  "codex.inlineSuggestions.showOnTriggerCharacters": true,
+  "codex.autocomplete.delay": 150,
+  "codex.autocomplete.maxResults": 5,
+  "codex.security.noSecrets": true,
+
+  // === Editor Settings ===
+  "editor.readOnly": false,
+  "editor.formatOnPaste": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "editor.minimap.enabled": false,
+
+  // === Workspace Trust / Security ===
+  "security.workspace.trust.enabled": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // === Optional: Disable Copilot Conflicts ===
+  "github.copilot.enable": false
+}
+
+
+
+

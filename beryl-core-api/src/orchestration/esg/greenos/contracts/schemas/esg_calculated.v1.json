@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "esg_calculated.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "topic",
+    "schema_version",
+    "emitted_at",
+    "correlation_id",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "topic": { "const": "esg_calculated.v1" },
+    "schema_version": { "const": "v1" },
+    "emitted_at": { "type": "string", "format": "date-time" },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger_id",
+        "trip_id",
+        "user_id",
+        "country_code",
+        "co2_avoided_kg",
+        "model_version",
+        "checksum",
+        "event_hash",
+        "signature",
+        "geo_hash",
+        "event_timestamp"
+      ],
+      "properties": {
+        "ledger_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "trip_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "user_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "country_code": { "type": "string", "minLength": 2, "maxLength": 2 },
+        "co2_avoided_kg": { "type": "number" },
+        "model_version": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "checksum": { "type": "string", "minLength": 32, "maxLength": 128 },
+        "event_hash": { "type": "string", "minLength": 32, "maxLength": 128 },
+        "signature": { "type": "string", "minLength": 32, "maxLength": 128 },
+        "geo_hash": { "type": "string", "minLength": 4, "maxLength": 32 },
+        "event_timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

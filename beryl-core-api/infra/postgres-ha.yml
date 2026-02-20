@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  postgres-primary:
+    image: bitnami/postgresql-repmgr:16
+    container_name: postgres-primary
+    restart: unless-stopped
+    environment:
+      POSTGRESQL_POSTGRES_PASSWORD: "${POSTGRES_POSTGRES_PASSWORD:?secret injection required}"
+      POSTGRESQL_USERNAME: "${POSTGRES_APP_USER:-beryl_app}"
+      POSTGRESQL_PASSWORD: "${POSTGRES_APP_PASSWORD:?secret injection required}"
+      POSTGRESQL_DATABASE: "${POSTGRES_DB:-beryl_db}"
+      REPMGR_PASSWORD: "${POSTGRES_REPMGR_PASSWORD:?secret injection required}"
+      REPMGR_PRIMARY_HOST: postgres-primary
+      REPMGR_NODE_NAME: postgres-primary
+      REPMGR_NODE_NETWORK_NAME: postgres-primary
+      REPMGR_PARTNER_NODES: postgres-primary,postgres-replica-1,postgres-replica-2
+
+  postgres-replica-1:
+    image: bitnami/postgresql-repmgr:16
+    container_name: postgres-replica-1
+    restart: unless-stopped
+    environment:
+      POSTGRESQL_POSTGRES_PASSWORD: "${POSTGRES_POSTGRES_PASSWORD:?secret injection required}"
+      POSTGRESQL_USERNAME: "${POSTGRES_APP_USER:-beryl_app}"
+      POSTGRESQL_PASSWORD: "${POSTGRES_APP_PASSWORD:?secret injection required}"
+      POSTGRESQL_DATABASE: "${POSTGRES_DB:-beryl_db}"
+      REPMGR_PASSWORD: "${POSTGRES_REPMGR_PASSWORD:?secret injection required}"
+      REPMGR_PRIMARY_HOST: postgres-primary
+      REPMGR_NODE_NAME: postgres-replica-1
+      REPMGR_NODE_NETWORK_NAME: postgres-replica-1
+      REPMGR_PARTNER_NODES: postgres-primary,postgres-replica-1,postgres-replica-2
+
+  postgres-replica-2:
+    image: bitnami/postgresql-repmgr:16
+    container_name: postgres-replica-2
+    restart: unless-stopped
+    environment:
+      POSTGRESQL_POSTGRES_PASSWORD: "${POSTGRES_POSTGRES_PASSWORD:?secret injection required}"
+      POSTGRESQL_USERNAME: "${POSTGRES_APP_USER:-beryl_app}"
+      POSTGRESQL_PASSWORD: "${POSTGRES_APP_PASSWORD:?secret injection required}"
+      POSTGRESQL_DATABASE: "${POSTGRES_DB:-beryl_db}"
+      REPMGR_PASSWORD: "${POSTGRES_REPMGR_PASSWORD:?secret injection required}"
+      REPMGR_PRIMARY_HOST: postgres-primary
+      REPMGR_NODE_NAME: postgres-replica-2
+      REPMGR_NODE_NETWORK_NAME: postgres-replica-2
+      REPMGR_PARTNER_NODES: postgres-primary,postgres-replica-1,postgres-replica-2
+
+  pgpool:
+    image: bitnami/pgpool:4.5.4
+    container_name: postgres-pgpool
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      PGPOOL_BACKEND_NODES: 0:postgres-primary:5432,1:postgres-replica-1:5432,2:postgres-replica-2:5432
+      PGPOOL_SR_CHECK_USER: repmgr
+      PGPOOL_SR_CHECK_PASSWORD: "${POSTGRES_REPMGR_PASSWORD:?secret injection required}"
+      PGPOOL_ENABLE_LDAP: "no"
+      PGPOOL_POSTGRES_USERNAME: "${POSTGRES_APP_USER:-beryl_app}"
+      PGPOOL_POSTGRES_PASSWORD: "${POSTGRES_APP_PASSWORD:?secret injection required}"
+      PGPOOL_ADMIN_USERNAME: "${PGPOOL_ADMIN_USER:-admin}"
+      PGPOOL_ADMIN_PASSWORD: "${PGPOOL_ADMIN_PASSWORD:?secret injection required}"

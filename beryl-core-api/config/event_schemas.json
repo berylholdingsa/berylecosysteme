@@ -1,0 +1,73 @@
+{
+  "fintech.transaction.completed": {
+    "required": ["event_id", "event_type", "transaction_id", "actor_id", "amount", "currency", "timestamp", "correlation_id"],
+    "field_types": {
+      "event_id": "str",
+      "event_type": "str",
+      "transaction_id": "str",
+      "actor_id": "str",
+      "amount": "float",
+      "currency": "str",
+      "timestamp": "str",
+      "correlation_id": "str"
+    }
+  },
+  "fintech.suspicious.activity": {
+    "required": ["event_id", "event_type", "transaction_id", "actor_id", "risk_score", "reasons", "timestamp", "correlation_id"],
+    "field_types": {
+      "event_id": "str",
+      "event_type": "str",
+      "transaction_id": "str",
+      "actor_id": "str",
+      "risk_score": "float",
+      "reasons": "str",
+      "timestamp": "str",
+      "correlation_id": "str"
+    }
+  },
+  "fintech.payment.failed": {
+    "required": ["event_id", "event_type", "payment_id", "actor_id", "reason", "timestamp", "correlation_id"],
+    "field_types": {
+      "event_id": "str",
+      "event_type": "str",
+      "payment_id": "str",
+      "actor_id": "str",
+      "reason": "str",
+      "timestamp": "str",
+      "correlation_id": "str"
+    }
+  },
+  "trip_completed.v1": {
+    "required": ["event_id", "topic", "schema_version", "emitted_at", "correlation_id", "payload"],
+    "field_types": {
+      "event_id": "str",
+      "topic": "str",
+      "schema_version": "str",
+      "emitted_at": "str",
+      "correlation_id": "str",
+      "payload": "dict"
+    }
+  },
+  "esg_calculated.v1": {
+    "required": ["event_id", "topic", "schema_version", "emitted_at", "correlation_id", "payload"],
+    "field_types": {
+      "event_id": "str",
+      "topic": "str",
+      "schema_version": "str",
+      "emitted_at": "str",
+      "correlation_id": "str",
+      "payload": "dict"
+    }
+  },
+  "audit_generated.v1": {
+    "required": ["event_id", "topic", "schema_version", "emitted_at", "correlation_id", "payload"],
+    "field_types": {
+      "event_id": "str",
+      "topic": "str",
+      "schema_version": "str",
+      "emitted_at": "str",
+      "correlation_id": "str",
+      "payload": "dict"
+    }
+  }
+}

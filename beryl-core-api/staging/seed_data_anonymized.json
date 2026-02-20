@@ -1,0 +1,28 @@
+{
+  "generated_for": "staging_regulatory_validation",
+  "customers": [
+    {
+      "customer_id": "cust-anon-001",
+      "kyc_level": "verified",
+      "country": "SN",
+      "risk_segment": "standard"
+    },
+    {
+      "customer_id": "cust-anon-002",
+      "kyc_level": "enhanced_due_diligence",
+      "country": "CI",
+      "risk_segment": "heightened"
+    },
+    {
+      "customer_id": "cust-anon-003",
+      "kyc_level": "verified",
+      "country": "FR",
+      "risk_segment": "standard"
+    }
+  ],
+  "wallets": [
+    {"wallet_id": "w-anon-001", "customer_id": "cust-anon-001", "currency": "XOF"},
+    {"wallet_id": "w-anon-002", "customer_id": "cust-anon-002", "currency": "XOF"},
+    {"wallet_id": "w-anon-003", "customer_id": "cust-anon-003", "currency": "EUR"}
+  ]
+}

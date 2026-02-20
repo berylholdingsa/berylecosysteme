@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - alerts/*.yml
+  - /etc/prometheus/infra-prometheus-alert-rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  - job_name: 'beryl-core-api'
+    static_configs:
+      - targets: ['beryl-core-api:8000']
+    metrics_path: '/metrics'

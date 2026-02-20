@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cache
+  namespace: default
+  labels:
+    app: redis-cache
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app: redis-cache
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-cache-secret
+  namespace: default
+stringData:
+  password: ChangeThisRedisPassword2025!
+type: Opaque
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cache
+  namespace: default
+spec:
+  serviceName: redis-cache
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-cache
+  template:
+    metadata:
+      labels:
+        app: redis-cache
+    spec:
+      containers:
+        - name: redis
+          image: redis:8.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              envsubst < /etc/redis/redis.conf.tpl > /tmp/redis.conf
+              redis-server /tmp/redis.conf --protected-mode yes
+          ports:
+            - containerPort: 6379
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cache-secret
+                  key: password
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "-a", "$(REDIS_PASSWORD)", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis
+            - name: redis-data
+              mountPath: /data
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-cache-config
+            items:
+              - key: redis.conf.tpl
+                path: redis.conf.tpl
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 20Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-cache-config
+  namespace: default
+data:
+  redis.conf.tpl: |
+    protected-mode yes
+    requirepass ${REDIS_PASSWORD}
+    appendonly yes
+    appendfsync everysec
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+    tls-port 0
+    stopped-writes-on-bgsave-error yes

@@ -1,0 +1,239 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beryl-core-api
+  namespace: default
+  labels:
+    app: beryl-core-api
+    component: api-gateway
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: beryl-core-api
+  template:
+    metadata:
+      labels:
+        app: beryl-core-api
+        component: api-gateway
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: beryl-api-sa
+      containers:
+      - name: beryl-core-api
+        image: beryl/core-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        # Configuration from ConfigMap
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: LOG_LEVEL
+        - name: METRICS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: METRICS_ENABLED
+        - name: TRACING_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: TRACING_ENABLED
+        - name: AUDIT_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: AUDIT_ENABLED
+        - name: EVENT_BUS
+          valueFrom:
+            configMapKeyRef:
+              name: beryl-config
+              key: EVENT_BUS
+
+        # Secrets
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: JWT_SECRET_KEY
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: DATABASE_PASSWORD
+        - name: FINTECH_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: FINTECH_API_KEY
+        - name: MOBILITY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: MOBILITY_API_KEY
+        - name: ESG_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: ESG_API_KEY
+        - name: SOCIAL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: beryl-secrets
+              key: SOCIAL_API_KEY
+
+        # Resource limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        # Volume mounts for logs
+        volumeMounts:
+        - name: audit-logs
+          mountPath: /var/log/beryl
+        - name: app-logs
+          mountPath: /app/logs
+
+      # Sidecar container for log shipping (optional)
+      - name: log-shipper
+        image: fluent/fluent-bit:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: FLUENT_ELASTICSEARCH_HOST
+          value: "elasticsearch.beryl-monitoring.svc.cluster.local"
+        - name: FLUENT_ELASTICSEARCH_PORT
+          value: "9200"
+        volumeMounts:
+        - name: audit-logs
+          mountPath: /var/log/beryl
+          readOnly: true
+        - name: app-logs
+          mountPath: /app/logs
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: /fluent-bit/etc/
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+
+        # Health checks for sidecar
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep fluent-bit
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep fluent-bit
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      volumes:
+      # Persistent volume for audit logs
+      - name: audit-logs
+        persistentVolumeClaim:
+          claimName: beryl-audit-logs-pvc
+      # Empty dir for application logs
+      - name: app-logs
+        emptyDir: {}
+      # ConfigMap for fluent-bit
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-config
+
+      # Node affinity for better performance
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: beryl/node-type
+                operator: In
+                values:
+                - api-gateway
+
+      # Pod disruption budget compatible
+      tolerations:
+      - key: "beryl-maintenance"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"

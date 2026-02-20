@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================
+    // Helper functions
+    // ==========================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserRole(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+        ? get(/databases/$(database)/documents/users/$(uid)).data.role
+        : null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserRole(request.auth.uid) == "ADMIN";
+    }
+
+    function validEmail(email) {
+      return email is string
+        && email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+
+    function validPhone(phone) {
+      return phone is string
+        && (phone == "" || phone.matches('^\\+?[0-9]{9,15}$'));
+    }
+
+    function validKycStatus(status) {
+      return status in ["PENDING", "VERIFIED", "REJECTED"];
+    }
+
+    function kycProgressionAllowed(oldStatus, newStatus) {
+      return (oldStatus == "PENDING" && (newStatus == "VERIFIED" || newStatus == "REJECTED"))
+        || (oldStatus == newStatus);
+    }
+
+    // ==========================
+    // USERS collection
+    // ==========================
+    match /users/{uid} {
+
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasAll([
+            'prenom', 'nom', 'email', 'phoneNumber',
+            'photoUrl', 'kycStatus', 'role', 'riskScore'
+        ])
+        && validEmail(request.resource.data.email)
+        && validPhone(request.resource.data.phoneNumber)
+        && validKycStatus(request.resource.data.kycStatus)
+        && request.resource.data.role in ["ADMIN", "USER"]
+        && request.resource.data.riskScore is int
+        && request.resource.data.riskScore >= 0
+        && request.resource.data.riskScore <= 100;
+
+      allow read: if isSignedIn() && request.auth.uid == uid;
+
+      allow update: if isSignedIn()
+        && request.auth.uid == uid
+        && validEmail(request.resource.data.email)
+        && validPhone(request.resource.data.phoneNumber)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.riskScore == resource.data.riskScore
+        && kycProgressionAllowed(resource.data.kycStatus, request.resource.data.kycStatus);
+
+      allow update: if isAdmin()
+        && validEmail(request.resource.data.email)
+        && validPhone(request.resource.data.phoneNumber)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.riskScore is int
+        && request.resource.data.riskScore >= 0
+        && request.resource.data.riskScore <= 100
+        && validKycStatus(request.resource.data.kycStatus)
+        && kycProgressionAllowed(resource.data.kycStatus, request.resource.data.kycStatus);
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================
+    // CONVERSATIONS collection
+    // ==========================
+    function isConversationParticipant(conversationId) {
+      return exists(/databases/$(database)/documents/conversations/$(conversationId))
+        && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+    }
+
+    match /conversations/{conversationId} {
+      allow create: if isSignedIn()
+        && request.resource.data.participants is list
+        && request.auth.uid in request.resource.data.participants;
+
+      allow read, update, delete: if isSignedIn()
+        && isConversationParticipant(conversationId);
+
+      match /messages/{messageId} {
+        allow read, create: if isSignedIn()
+          && isConversationParticipant(conversationId);
+      }
+    }
+
+    // ==========================
+    // Default deny
+    // ==========================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

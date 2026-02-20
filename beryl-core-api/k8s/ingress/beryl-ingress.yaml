@@ -1,0 +1,74 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: beryl-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  tls:
+  - hosts:
+    - api.beryl-ecosystem.com
+    - graphql.beryl-ecosystem.com
+    secretName: beryl-tls-cert
+  rules:
+  # REST API Gateway
+  - host: api.beryl-ecosystem.com
+    http:
+      paths:
+      - path: /api/v1
+        pathType: Prefix
+        backend:
+          service:
+            name: beryl-core-api
+            port:
+              number: 80
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: beryl-core-api
+            port:
+              number: 80
+      - path: /metrics
+        pathType: Exact
+        backend:
+          service:
+            name: beryl-core-api
+            port:
+              number: 80
+
+  # GraphQL Gateway
+  - host: graphql.beryl-ecosystem.com
+    http:
+      paths:
+      - path: /graphql
+        pathType: Exact
+        backend:
+          service:
+            name: graphql-gateway
+            port:
+              number: 80
+      - path: /graphiql
+        pathType: Exact
+        backend:
+          service:
+            name: graphql-gateway
+            port:
+              number: 80
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: graphql-gateway
+            port:
+              number: 80

@@ -1,0 +1,270 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-zero-trust-network-policy
+  namespace: default
+spec:
+  podSelector: {}  # Apply to all pods in namespace
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-core-api-ingress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: beryl-core-api
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow traffic from ingress-nginx
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow traffic from GraphQL gateway
+  - from:
+    - podSelector:
+        matchLabels:
+          app: graphql-gateway
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow health checks from kube-system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-graphql-gateway-ingress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: graphql-gateway
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow traffic from ingress-nginx
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow health checks from kube-system
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-event-bus-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: event-bus
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow traffic from beryl-core-api
+  - from:
+    - podSelector:
+        matchLabels:
+          app: beryl-core-api
+    ports:
+    - protocol: TCP
+      port: 9092
+  # Allow traffic from adapters
+  - from:
+    - podSelector:
+        matchLabels:
+          component: adapter
+    ports:
+    - protocol: TCP
+      port: 9092
+  # Allow health checks
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 9092
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-adapters-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      component: adapter
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from beryl-core-api only
+  - from:
+    - podSelector:
+        matchLabels:
+          app: beryl-core-api
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS only
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow HTTPS to external APIs
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Deny all other egress by default
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-monitoring-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      component: monitoring
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from authorized monitoring tools
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090  # Metrics
+    - protocol: TCP
+      port: 16686  # Jaeger
+  egress:
+  # Allow DNS and necessary services
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-deny-all-egress
+  namespace: default
+spec:
+  podSelector: {}  # Apply to all pods
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow necessary Kubernetes services
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 6443
+  # Allow intra-namespace communication
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+  # Explicitly deny all other egress (catch-all rule)
+  - to: []
+    ports: []  # Empty ports means all ports blocked
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-database-isolation
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      component: database
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow traffic only from application pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: beryl-core-api
+    ports:
+    - protocol: TCP
+      port: 5432  # PostgreSQL
+    - protocol: TCP
+      port: 6379  # Redis
+  # Allow from adapters for specific operations
+  - from:
+    - podSelector:
+        matchLabels:
+          component: adapter
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-service-mesh-mtls
+  namespace: default
+  annotations:
+    linkerd.io/inject: enabled  # If using Linkerd
+spec:
+  podSelector: {}  # Apply to all pods
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Enforce mTLS for all ingress traffic
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080  # Service mesh port
+  egress:
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080

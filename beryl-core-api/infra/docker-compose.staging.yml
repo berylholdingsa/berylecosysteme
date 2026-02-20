@@ -1,0 +1,93 @@
+version: "3.9"
+
+name: beryl-staging
+
+services:
+  beryl-core-api:
+    image: "${BERYL_CORE_API_IMAGE:-beryl/core-api:staging}"
+    container_name: beryl-core-api-staging
+    restart: unless-stopped
+    ports:
+      - "${STAGING_API_PORT:-18000}:8000"
+    environment:
+      ENVIRONMENT: staging
+      EVENT_BUS: kafka
+      KAFKA_ENVIRONMENT: staging
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      KAFKA_MANUAL_COMMIT_ONLY: "true"
+      KAFKA_CONSUMER_GROUP_PREFIX: beryl-core
+      DATABASE_URL: "${STAGING_DATABASE_URL:?injected by secret manager}"
+      JWT_SECRET_KEY: "${STAGING_JWT_SECRET_KEY:?injected by secret manager}"
+      AUDIT_SECRET_KEY: "${STAGING_AUDIT_SECRET_KEY:?injected by secret manager}"
+      EVENT_HMAC_SECRET: "${STAGING_EVENT_HMAC_SECRET:?injected by secret manager}"
+      PSP_WEBHOOK_HMAC_SECRET: "${STAGING_PSP_WEBHOOK_HMAC_SECRET:?injected by secret manager}"
+      AES256_KEY_B64: "${STAGING_AES256_KEY_B64:?injected by secret manager}"
+      SECRETS_BACKEND: "${SECRETS_BACKEND:-mock}"
+      SECRETS_CONFIG_PATH: "${SECRETS_CONFIG_PATH:-/etc/beryl/secrets/staging-manifest.json}"
+      METRICS_ENABLED: "true"
+      TRACING_ENABLED: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - pgpool
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - beryl-staging-net
+
+  prometheus:
+    image: prom/prometheus:v2.53.2
+    container_name: beryl-prometheus-staging
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=14d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/alerts:/etc/prometheus/alerts:ro
+      - ./prometheus-alert-rules.yml:/etc/prometheus/infra-prometheus-alert-rules.yml:ro
+    ports:
+      - "19090:9090"
+    depends_on:
+      - beryl-core-api
+      - alertmanager
+    networks:
+      - beryl-staging-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: beryl-alertmanager-staging
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--log.level=debug"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "19093:9093"
+    depends_on:
+      - alert-webhook-simulator
+    networks:
+      - beryl-staging-net
+
+  alert-webhook-simulator:
+    image: mendhak/http-https-echo:37
+    container_name: beryl-alert-webhook-simulator
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: "8080"
+      LOG_WITHOUT_NEWLINE: "false"
+    ports:
+      - "5055:8080"
+    networks:
+      - beryl-staging-net
+
+networks:
+  beryl-staging-net:
+    name: beryl-staging-net
+    driver: bridge

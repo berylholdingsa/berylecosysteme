@@ -1,0 +1,109 @@
+apiGateway:
+  name: beryl-zero-trust-gateway
+  version: v1
+  description: |
+    Central gateway enforcing OAuth2/JWT, mTLS between services, rate limiting and DDoS mitigation
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: MUTUAL
+        certificateSecret: beryl-core-api-mtls
+        caSecret: beryl-zero-trust-ca
+        minProtocolVersion: TLS1.3
+        cipherSuites:
+          - TLS_AES_256_GCM_SHA384
+          - TLS_CHACHA20_POLY1305_SHA256
+  routes:
+    - name: fintech-api
+      match:
+        prefix: /api/v1/fintech
+      protocols:
+        - http
+      backend:
+        url: http://beryl-fintech.svc.cluster.local:8000
+        protocol: HTTP
+    - name: mobility-api
+      match:
+        prefix: /api/v1/mobility
+      protocols:
+        - http
+      backend:
+        url: http://beryl-mobility.svc.cluster.local:8000
+        protocol: HTTP
+    - name: social-api
+      match:
+        prefix: /api/v1/social
+      protocols:
+        - grpc
+      backend:
+        url: grpc://beryl-social.svc.cluster.local:50051
+        protocol: gRPC
+    - name: graphql-gateway
+      match:
+        prefix: /graphql
+      protocols:
+        - http
+      backend:
+        url: http://graphql-gateway.svc.cluster.local:8080
+        protocol: HTTP
+  security:
+    oauth2:
+      issuer: https://identity.beryl.local
+      audience:
+        - beryl-core
+        - beryl-partners
+      tokenEndpoint: https://identity.beryl.local/oauth2/token
+      userinfoEndpoint: https://identity.beryl.local/oauth2/userinfo
+      scopes:
+        admin: [openid, profile, beryl.admin, beryl.superuser]
+        user: [openid, profile, beryl.user]
+        partner: [openid, profile, beryl.partner]
+    jwt:
+      verification:
+        jwksUri: https://identity.beryl.local/.well-known/jwks.json
+        leewaySeconds: 60
+        algorithms: [RS256, ES256]
+      claims:
+        - iss: https://identity.beryl.local
+        - aud: beryl-core
+        - typ: access
+  observability:
+    logging:
+      format: json
+      correlationIdHeader: x-correlation-id
+      auditLog: true
+    tracing:
+      provider: OpenTelemetry
+      exporter: jaeger
+    metrics:
+      prometheus: true
+  rateLimiting:
+    enabled: true
+    policies:
+      - name: global-ip
+        match: "*"
+        limit:
+          requests: 120
+          window: 60s
+      - name: login
+        match: /api/v1/auth/*
+        limit:
+          requests: 30
+          window: 60s
+  ddos:
+    connectionLimit: 1000
+    concurrentStreams: 500
+    burst: 500
+    detection:
+      enabled: true
+      anomalyThreshold: 5
+    mitigation:
+      blocklistDuration: 300s
+  tlsTermination:
+    internal: mTLS
+    external: tls-cert-manager
+  fallback:
+    timeout: 30s
+    retry: 2

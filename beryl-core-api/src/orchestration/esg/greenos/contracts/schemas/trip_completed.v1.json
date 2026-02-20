@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "trip_completed.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "topic",
+    "schema_version",
+    "emitted_at",
+    "correlation_id",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "topic": { "const": "trip_completed.v1" },
+    "schema_version": { "const": "v1" },
+    "emitted_at": { "type": "string", "format": "date-time" },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trip_id",
+        "user_id",
+        "vehicle_id",
+        "country_code",
+        "distance_km",
+        "geo_hash",
+        "event_timestamp"
+      ],
+      "properties": {
+        "trip_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "user_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "vehicle_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "country_code": { "type": "string", "minLength": 2, "maxLength": 2 },
+        "distance_km": { "type": "number", "exclusiveMinimum": 0 },
+        "geo_hash": { "type": "string", "minLength": 4, "maxLength": 32 },
+        "event_timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "transactions": [
+    {
+      "tx_id": "tx-sim-0001",
+      "actor_id": "cust-anon-001",
+      "amount": 1200.5,
+      "currency": "XOF",
+      "target_account": "w-anon-002",
+      "expected_status": "ACCEPTED"
+    },
+    {
+      "tx_id": "tx-sim-0002",
+      "actor_id": "cust-anon-002",
+      "amount": 1500000.0,
+      "currency": "XOF",
+      "target_account": "w-anon-001",
+      "expected_status": "FLAGGED"
+    },
+    {
+      "tx_id": "tx-sim-0003",
+      "actor_id": "cust-anon-003",
+      "amount": 250.0,
+      "currency": "EUR",
+      "target_account": "w-anon-001",
+      "expected_status": "ACCEPTED"
+    }
+  ]
+}

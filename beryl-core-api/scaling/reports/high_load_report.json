@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-02-12T10:32:38.426137+00:00",
+  "test": "high_load_regulatory_suite",
+  "simulation_mode": true,
+  "profiles": [
+    {
+      "profile": "burst_2000_tps",
+      "target_tps": 2000,
+      "target_tpm": 120000,
+      "achieved_tps": 2015,
+      "latency_p95_ms": 190,
+      "cpu_pct": 71,
+      "memory_pct": 68,
+      "dlq_events_delta": 0
+    },
+    {
+      "profile": "burst_5000_tps",
+      "target_tps": 5000,
+      "target_tpm": 300000,
+      "achieved_tps": 5030,
+      "latency_p95_ms": 255,
+      "cpu_pct": 82,
+      "memory_pct": 79,
+      "dlq_events_delta": 0
+    },
+    {
+      "profile": "steady_10k_tx_min",
+      "target_tps": 170,
+      "target_tpm": 10000,
+      "achieved_tps": 170,
+      "latency_p95_ms": 205,
+      "cpu_pct": 64,
+      "memory_pct": 60,
+      "dlq_events_delta": 0
+    }
+  ],
+  "validations": {
+    "idempotency_stable": true,
+    "no_data_corruption": true,
+    "audit_chain_intact": true,
+    "dlq_stable": true,
+    "resource_threshold_ok": true,
+    "latency_sla_ok": true,
+    "throughput_target_ok": true
+  },
+  "failures": {
+    "resource": [],
+    "latency": [],
+    "throughput": [],
+    "dlq": []
+  },
+  "status": "passed"
+}

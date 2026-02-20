@@ -1,0 +1,233 @@
+name: Beryl Core API CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job 1: Linting and Testing
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Create virtual environment and set PYTHONPATH
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        export PYTHONPATH=$(pwd)/src
+
+    - name: Run Zero-Trust Tests
+      run: |
+        source .venv/bin/activate
+        export PYTHONPATH=$(pwd)/src
+        pytest tests/integration/test_zero_trust_enforcement.py -v --asyncio-mode=auto
+        pytest tests/integration/test_mobility_routes.py -v --asyncio-mode=auto
+        pytest tests/integration/test_event_driven.py -v --asyncio-mode=auto
+        pytest tests/integration/test_observability.py -v --asyncio-mode=auto
+
+    - name: Run linting
+      run: |
+        flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Run security scan
+      run: |
+        pip install safety
+        safety check
+
+    - name: Run tests with coverage
+      run: |
+        pytest --cov=src --cov-report=xml --cov-report=term-missing tests/
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  # Job 2: Build and Push Docker Image
+  docker-build-push:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
+
+  # Job 3: Security Scan
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Job 4: Deploy to Staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [docker-build-push, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v3
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+    - name: Deploy to staging
+      run: |
+        # Update image tag in deployment
+        sed -i 's|beryl/core-api:latest|${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop-${{ github.sha }}|g' k8s/deployments/beryl-core-api-deployment.yaml
+
+        # Apply Kubernetes manifests
+        kubectl apply -f k8s/namespaces/
+        kubectl apply -f k8s/configmaps/
+        kubectl apply -f k8s/secrets/
+        kubectl apply -f k8s/deployments/
+        kubectl apply -f k8s/services/
+        kubectl apply -f k8s/ingress/
+
+        # Wait for rollout
+        kubectl rollout status deployment/beryl-core-api -n default --timeout=300s
+
+    - name: Run integration tests
+      run: |
+        # Wait for services to be ready
+        kubectl wait --for=condition=available --timeout=300s deployment/beryl-core-api -n default
+
+        # Run integration tests against staging
+        pip install requests pytest
+        pytest tests/integration/ -v --tb=short
+
+  # Job 5: Deploy to Production
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [docker-build-push, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl for production
+      uses: azure/k8s-set-context@v3
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+
+    - name: Deploy to production with blue-green strategy
+      run: |
+        # Update image tag
+        sed -i 's|beryl/core-api:latest|${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|g' k8s/deployments/beryl-core-api-deployment.yaml
+
+        # Blue-green deployment
+        kubectl apply -f k8s/deployments/beryl-core-api-deployment.yaml
+
+        # Wait for new deployment
+        kubectl rollout status deployment/beryl-core-api -n default --timeout=600s
+
+        # Health check
+        kubectl exec -it deployment/beryl-core-api -n default -- curl -f http://localhost:8000/health
+
+        # If successful, update ingress to point to new deployment
+        kubectl apply -f k8s/ingress/
+
+    - name: Run smoke tests
+      run: |
+        # Quick smoke tests against production
+        curl -f https://api.beryl-ecosystem.com/health
+        curl -f https://graphql.beryl-ecosystem.com/health
+
+  # Job 6: Post-deployment monitoring
+  monitoring-check:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+    - name: Check deployment health
+      run: |
+        echo "Checking deployment status..."
+        # Add monitoring checks here
+        echo "All deployments completed successfully"

@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: beryl-gateway-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/limit-connections: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "200"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/enable-owasp-modsecurity: "true"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      SecRuleEngine On
+      SecRule REQUEST_URI "@beginsWith /api/v1/auth" "id:1001,phase:2,deny,log,status:429,msg:'Login abuse detected'"
+      SecRule REQUEST_HEADERS:User-Agent "@rx ^(curl|Wget|python)" "id:1002,phase:2,deny,log,status:403,msg:'Automated bot detected'"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,192.168.0.0/16"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.beryl.eco
+      secretName: beryl-gateway-tls
+  rules:
+    - host: api.beryl.eco
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: beryl-core-api
+                port:
+                  number: 443

@@ -1,0 +1,4432 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Beryl Core API",
+    "description": "Central API Gateway and orchestration layer for Béryl ecosystem",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/rotate-keys": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Rotate Keys",
+        "operationId": "rotate_keys_api_v1_auth_rotate_keys_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fintech/transactions": {
+      "post": {
+        "tags": [
+          "Fintech"
+        ],
+        "summary": "Create Transaction",
+        "operationId": "create_transaction_api_v1_fintech_transactions_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fintech/payments": {
+      "get": {
+        "tags": [
+          "Fintech"
+        ],
+        "summary": "Get Payments",
+        "operationId": "get_payments_api_v1_fintech_payments_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fintech/outbox/publish": {
+      "post": {
+        "tags": [
+          "Fintech"
+        ],
+        "summary": "Publish Outbox",
+        "operationId": "publish_outbox_api_v1_fintech_outbox_publish_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutboxPublishResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fintech/events/consume": {
+      "post": {
+        "tags": [
+          "Fintech"
+        ],
+        "summary": "Consume Kafka Events",
+        "operationId": "consume_kafka_events_api_v1_fintech_events_consume_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KafkaConsumeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fintech/audit/events": {
+      "get": {
+        "tags": [
+          "Fintech"
+        ],
+        "summary": "List Audit Events",
+        "operationId": "list_audit_events_api_v1_fintech_audit_events_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventView"
+                  },
+                  "title": "Response List Audit Events Api V1 Fintech Audit Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fintech/audit/verify": {
+      "get": {
+        "tags": [
+          "Fintech"
+        ],
+        "summary": "Verify Audit Chain",
+        "operationId": "verify_audit_chain_api_v1_fintech_audit_verify_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditVerificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mobility/demand/predict": {
+      "post": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Predict Demand",
+        "description": "Predict demand for electric mobility at a location.\n\n- **location**: Geographic location identifier\n- **time_window**: hourly, daily, or weekly granularity\n- **forecast_horizon**: Number of hours to forecast ahead",
+        "operationId": "predict_demand_api_v1_mobility_demand_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemandRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemandResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mobility/routing/optimize": {
+      "post": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Optimize Route",
+        "description": "Optimize route for energy efficiency.\n\n- **origin**: Starting location\n- **destination**: Ending location\n- **vehicle_type**: ebike, escooter, or ecar\n- **battery_level**: Current battery percentage (optional)\n- **max_time_minutes**: Maximum allowed travel time (optional)",
+        "operationId": "optimize_route_api_v1_mobility_routing_optimize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mobility/fleet/{fleet_id}/analyze": {
+      "post": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Analyze Fleet",
+        "description": "Analyze fleet intelligence metrics.\n\n- **fleet_id**: Fleet identifier (path parameter)\n- **metrics**: Specific metrics to analyze (optional)",
+        "operationId": "analyze_fleet_api_v1_mobility_fleet__fleet_id__analyze_post",
+        "parameters": [
+          {
+            "name": "fleet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fleet Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FleetAnalysisRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mobility/vehicle/{vehicle_id}/status": {
+      "get": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Get Vehicle Status",
+        "description": "Get real-time vehicle status.\n\n- **vehicle_id**: Vehicle identifier (path parameter)",
+        "operationId": "get_vehicle_status_api_v1_mobility_vehicle__vehicle_id__status_get",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehicleStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mobility/vehicle/{vehicle_id}/maintenance": {
+      "get": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Predict Maintenance",
+        "description": "Predict maintenance needs for a vehicle.\n\n- **vehicle_id**: Vehicle identifier (path parameter)",
+        "operationId": "predict_maintenance_api_v1_mobility_vehicle__vehicle_id__maintenance_get",
+        "parameters": [
+          {
+            "name": "vehicle_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Vehicle Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenancePredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mobility/fleet/{fleet_id}/optimize-distribution": {
+      "post": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Optimize Fleet Distribution",
+        "description": "Optimize vehicle distribution across target locations.\n\n- **fleet_id**: Fleet identifier (path parameter)\n- **target_locations**: Locations that need vehicles",
+        "operationId": "optimize_fleet_distribution_api_v1_mobility_fleet__fleet_id__optimize_distribution_post",
+        "parameters": [
+          {
+            "name": "fleet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fleet Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FleetDistributionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetDistributionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mobility/destination/intelligent": {
+      "post": {
+        "tags": [
+          "Mobility"
+        ],
+        "summary": "Intelligent Destination",
+        "description": "Compute smart destination recommendation with backend AOQ decisioning.\n\n- **query**: Destination typed by user\n- **candidate_destinations**: Optional destination candidates\n- **trip_history**: Optional destination history with usage count\n- **travel_mode**: solo, family, or eco",
+        "operationId": "intelligent_destination_api_v1_mobility_destination_intelligent_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntelligentDestinationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntelligentDestinationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/pedometer/data": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Pedometer Data",
+        "description": "Retrieve pedometer data for a user.\n\n- **user_id**: User identifier\n- **date_from**: Start date for data retrieval\n- **date_to**: End date for data retrieval",
+        "operationId": "get_pedometer_data_api_v1_esg_pedometer_data_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PedometerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PedometerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/esg/health/profile": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Health Profile",
+        "description": "Retrieve health profile - SENSITIVE DATA.\n\n- **user_id**: User identifier",
+        "operationId": "get_health_profile_api_v1_esg_health_profile_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/esg/score": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Calculate Esg Score",
+        "description": "Calculate ESG score for a user.\n\n- **user_id**: User identifier\n- **period**: Calculation period (daily, weekly, monthly, yearly)",
+        "operationId": "calculate_esg_score_api_v1_esg_esg_score_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EsgScoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EsgScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/sustainability/indicators": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Sustainability Indicators",
+        "description": "Get sustainability indicators for a user.\n\n- **user_id**: User identifier",
+        "operationId": "get_sustainability_indicators_api_v1_esg_sustainability_indicators_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SustainabilityIndicatorsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SustainabilityIndicatorsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/community/{community_id}/impact": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Community Impact",
+        "description": "Get community impact metrics.\n\n- **community_id**: Community identifier (path parameter)",
+        "operationId": "get_community_impact_api_v1_esg_community__community_id__impact_post",
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Community Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommunityImpactRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityImpactResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/challenges/{user_id}/active": {
+      "get": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Active Challenges",
+        "description": "Get active health challenges for a user.\n\n- **user_id**: User identifier (path parameter)",
+        "operationId": "get_active_challenges_api_v1_esg_challenges__user_id__active_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HealthChallengeResponse"
+                  },
+                  "title": "Response Get Active Challenges Api V1 Esg Challenges  User Id  Active Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/wellbeing/score": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Wellbeing Score",
+        "description": "Get comprehensive wellbeing score for a user.\n\n- **user_id**: User identifier",
+        "operationId": "get_wellbeing_score_api_v1_esg_wellbeing_score_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WellbeingScoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellbeingScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/reporting/esg-report": {
+      "post": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Generate Esg Report",
+        "description": "Generate ESG report for institutional reporting.\n\n- **user_id**: User identifier\n- **report_type**: Report type (standard, detailed, executive)",
+        "operationId": "generate_esg_report_api_v1_esg_reporting_esg_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EsgReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EsgReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/esg/insights/{user_id}/personalized": {
+      "get": {
+        "tags": [
+          "ESG"
+        ],
+        "summary": "Get Personalized Insights",
+        "description": "Get personalized ESG and health insights.\n\n- **user_id**: User identifier (path parameter)\n\nAggregates pedometer, health, ESG, and wellbeing data for comprehensive view.",
+        "operationId": "get_personalized_insights_api_v1_esg_insights__user_id__personalized_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalizedInsightsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/feed/personalized": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Get Personalized Feed",
+        "description": "Get personalized feed for user.",
+        "operationId": "get_personalized_feed_api_v1_social_feed_personalized_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalizedFeedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItemResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Personalized Feed Api V1 Social Feed Personalized Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/social/recommendations": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Get Recommendations",
+        "description": "Get AI recommendations for user.",
+        "operationId": "get_recommendations_api_v1_social_recommendations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecommendationResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Recommendations Api V1 Social Recommendations Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/behavior/analyze": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Analyze Behavior",
+        "description": "Analyze user behavior patterns.",
+        "operationId": "analyze_behavior_api_v1_social_behavior_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BehaviorAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BehaviorAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/moderation/check": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Check Moderation",
+        "description": "Check content for moderation flags.",
+        "operationId": "check_moderation_api_v1_social_moderation_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationCheckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/trending": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Get Trending",
+        "description": "Get trending content.",
+        "operationId": "get_trending_api_v1_social_trending_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Category"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrendingContentResponse"
+                  },
+                  "title": "Response Get Trending Api V1 Social Trending Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/sentiment/community": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Analyze Sentiment",
+        "description": "Analyze community sentiment.",
+        "operationId": "analyze_sentiment_api_v1_social_sentiment_community_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SentimentAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentimentAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/connections/suggest/{user_id}": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "summary": "Suggest Connections",
+        "description": "Suggest user connections.",
+        "operationId": "suggest_connections_api_v1_social_connections_suggest__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionSuggestionResponse"
+                  },
+                  "title": "Response Suggest Connections Api V1 Social Connections Suggest  User Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/aoq/signals": {
+      "post": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "Create Signal",
+        "operationId": "create_signal_api_v1_aoq_signals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/aoq/decision": {
+      "post": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "Create Decision",
+        "operationId": "create_decision_api_v1_aoq_decision_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/aoq/evaluate": {
+      "post": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "Evaluate Decision",
+        "operationId": "evaluate_decision_api_v1_aoq_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/aoq/rules": {
+      "get": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "List Rules",
+        "operationId": "list_rules_api_v1_aoq_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Rules Api V1 Aoq Rules Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "Create Rule",
+        "operationId": "create_rule_api_v1_aoq_rules_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/aoq/decisions/{decision_id}": {
+      "get": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "Get Decision",
+        "operationId": "get_decision_api_v1_aoq_decisions__decision_id__get",
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Decision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/aoq/audit/{entity_id}": {
+      "get": {
+        "tags": [
+          "AOQ"
+        ],
+        "summary": "Get Audit",
+        "operationId": "get_audit_api_v1_aoq_audit__entity_id__get",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditTrailResponse"
+                  },
+                  "title": "Response Get Audit Api V1 Aoq Audit  Entity Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Read Root",
+        "description": "Root endpoint for health check.",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint with observability status.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Metrics Endpoint",
+        "description": "Prometheus metrics endpoint.",
+        "operationId": "metrics_endpoint_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AoqFeatures": {
+        "properties": {
+          "fintech_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Fintech Score"
+          },
+          "mobility_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Mobility Score"
+          },
+          "esg_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Esg Score"
+          },
+          "social_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Social Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fintech_score",
+          "mobility_score",
+          "esg_score",
+          "social_score"
+        ],
+        "title": "AoqFeatures"
+      },
+      "AuditEventView": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          },
+          "previous_hash": {
+            "type": "string",
+            "title": "Previous Hash"
+          },
+          "current_hash": {
+            "type": "string",
+            "title": "Current Hash"
+          },
+          "signature": {
+            "type": "string",
+            "title": "Signature"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "actor_id",
+          "action",
+          "amount",
+          "currency",
+          "correlation_id",
+          "previous_hash",
+          "current_hash",
+          "signature",
+          "created_at"
+        ],
+        "title": "AuditEventView"
+      },
+      "AuditTrailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "payload": {
+            "type": "object",
+            "title": "Payload"
+          },
+          "signature": {
+            "type": "string",
+            "title": "Signature"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "event_type",
+          "entity_id",
+          "payload",
+          "signature",
+          "created_at"
+        ],
+        "title": "AuditTrailResponse"
+      },
+      "AuditVerificationResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "issues"
+        ],
+        "title": "AuditVerificationResponse"
+      },
+      "AuthRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "AuthRequest"
+      },
+      "AuthResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type"
+        ],
+        "title": "AuthResponse"
+      },
+      "BehaviorAnalysisRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "period_days": {
+            "type": "integer",
+            "title": "Period Days",
+            "description": "Analysis period",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "BehaviorAnalysisRequest",
+        "description": "Request for behavior analysis."
+      },
+      "BehaviorAnalysisResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "engagement_level": {
+            "type": "string",
+            "title": "Engagement Level"
+          },
+          "preferred_content_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferred Content Types"
+          },
+          "posting_frequency": {
+            "type": "number",
+            "title": "Posting Frequency"
+          },
+          "interaction_patterns": {
+            "type": "object",
+            "title": "Interaction Patterns"
+          },
+          "peak_activity_hours": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Peak Activity Hours"
+          },
+          "community_affinity": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Community Affinity"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "engagement_level",
+          "preferred_content_types",
+          "posting_frequency",
+          "interaction_patterns",
+          "peak_activity_hours",
+          "community_affinity",
+          "timestamp"
+        ],
+        "title": "BehaviorAnalysisResponse",
+        "description": "Response for behavior analysis."
+      },
+      "CommunityImpactRequest": {
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "title": "Community Id",
+            "description": "Community identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "community_id"
+        ],
+        "title": "CommunityImpactRequest",
+        "description": "Request model for community impact metrics."
+      },
+      "CommunityImpactResponse": {
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "title": "Community Id"
+          },
+          "total_members": {
+            "type": "integer",
+            "title": "Total Members"
+          },
+          "avg_esg_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Avg Esg Score"
+          },
+          "collective_carbon_saved_kg": {
+            "type": "number",
+            "title": "Collective Carbon Saved Kg"
+          },
+          "members_active_today": {
+            "type": "integer",
+            "title": "Members Active Today"
+          },
+          "sustainability_initiatives": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sustainability Initiatives"
+          },
+          "community_health_rank": {
+            "type": "string",
+            "title": "Community Health Rank"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "community_id",
+          "total_members",
+          "avg_esg_score",
+          "collective_carbon_saved_kg",
+          "members_active_today",
+          "sustainability_initiatives",
+          "community_health_rank",
+          "timestamp"
+        ],
+        "title": "CommunityImpactResponse",
+        "description": "Response model for community impact."
+      },
+      "ConnectionSuggestionResponse": {
+        "properties": {
+          "suggestion_id": {
+            "type": "string",
+            "title": "Suggestion Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "suggested_user_id": {
+            "type": "string",
+            "title": "Suggested User Id"
+          },
+          "relevance_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Relevance Score"
+          },
+          "common_interests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Common Interests"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "suggestion_id",
+          "user_id",
+          "suggested_user_id",
+          "relevance_score",
+          "common_interests",
+          "timestamp"
+        ],
+        "title": "ConnectionSuggestionResponse",
+        "description": "Response for connection suggestion."
+      },
+      "DecisionRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "User Id"
+          },
+          "signal_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal Id"
+          },
+          "features": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AoqFeatures"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "DecisionRequest"
+      },
+      "DecisionResponse": {
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Decision Id"
+          },
+          "signal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Signal Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Rule Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision_id",
+          "signal_id",
+          "rule_id",
+          "user_id",
+          "score",
+          "threshold",
+          "decision",
+          "rationale",
+          "created_at"
+        ],
+        "title": "DecisionResponse"
+      },
+      "DemandRequest": {
+        "properties": {
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "description": "Geographic location identifier"
+          },
+          "time_window": {
+            "type": "string",
+            "title": "Time Window",
+            "description": "Granularity: hourly, daily, weekly",
+            "default": "hourly"
+          },
+          "forecast_horizon": {
+            "type": "integer",
+            "title": "Forecast Horizon",
+            "description": "Hours ahead to forecast",
+            "default": 24
+          }
+        },
+        "type": "object",
+        "required": [
+          "location"
+        ],
+        "title": "DemandRequest",
+        "description": "Request model for demand prediction."
+      },
+      "DemandResponse": {
+        "properties": {
+          "location": {
+            "type": "string",
+            "title": "Location"
+          },
+          "predicted_demand": {
+            "type": "number",
+            "title": "Predicted Demand",
+            "description": "Predicted demand units"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "description": "Confidence score 0-1"
+          },
+          "time_window": {
+            "type": "string",
+            "title": "Time Window"
+          },
+          "forecast_horizon": {
+            "type": "integer",
+            "title": "Forecast Horizon"
+          },
+          "forecast_data": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Forecast Data"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "location",
+          "predicted_demand",
+          "confidence",
+          "time_window",
+          "forecast_horizon",
+          "forecast_data",
+          "timestamp"
+        ],
+        "title": "DemandResponse",
+        "description": "Response model for demand prediction."
+      },
+      "DestinationHistoryItem": {
+        "properties": {
+          "destination": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Destination"
+          },
+          "count": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "default": 1
+          },
+          "last_used_hours": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 8760.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used Hours",
+            "description": "Hours since last usage of this destination"
+          }
+        },
+        "type": "object",
+        "required": [
+          "destination"
+        ],
+        "title": "DestinationHistoryItem",
+        "description": "Historical destination usage signal used by AOQ mobility scoring."
+      },
+      "EsgReportRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "report_type": {
+            "type": "string",
+            "title": "Report Type",
+            "description": "standard, detailed, executive",
+            "default": "standard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "EsgReportRequest",
+        "description": "Request model for ESG report generation."
+      },
+      "EsgReportResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "report_id": {
+            "type": "string",
+            "title": "Report Id"
+          },
+          "report_type": {
+            "type": "string",
+            "title": "Report Type"
+          },
+          "generated_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated Date"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Period End"
+          },
+          "esg_scores": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Esg Scores"
+          },
+          "compliance_status": {
+            "type": "string",
+            "title": "Compliance Status",
+            "description": "compliant, review_required, non_compliant"
+          },
+          "audit_trail": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Audit Trail"
+          },
+          "certifications": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Certifications"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "report_id",
+          "report_type",
+          "generated_date",
+          "period_start",
+          "period_end",
+          "esg_scores",
+          "compliance_status",
+          "audit_trail",
+          "certifications",
+          "timestamp"
+        ],
+        "title": "EsgReportResponse",
+        "description": "Response model for ESG institutional report."
+      },
+      "EsgScoreRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period",
+            "description": "daily, weekly, monthly, yearly",
+            "default": "monthly"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "EsgScoreRequest",
+        "description": "Request model for ESG score calculation."
+      },
+      "EsgScoreResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "environmental_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Environmental Score"
+          },
+          "social_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Social Score"
+          },
+          "governance_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Governance Score"
+          },
+          "overall_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Overall Score"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "trend": {
+            "type": "string",
+            "title": "Trend",
+            "description": "up, stable, down"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "environmental_score",
+          "social_score",
+          "governance_score",
+          "overall_score",
+          "period",
+          "trend",
+          "timestamp"
+        ],
+        "title": "EsgScoreResponse",
+        "description": "Response model for ESG score."
+      },
+      "FeedItemResponse": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "author_id": {
+            "type": "string",
+            "title": "Author Id"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "content_text": {
+            "type": "string",
+            "title": "Content Text"
+          },
+          "engagement_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Engagement Score"
+          },
+          "predicted_engagement": {
+            "type": "number",
+            "title": "Predicted Engagement"
+          },
+          "rank_score": {
+            "type": "number",
+            "title": "Rank Score"
+          },
+          "timestamp_created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "author_id",
+          "content_type",
+          "content_text",
+          "engagement_score",
+          "predicted_engagement",
+          "rank_score",
+          "timestamp_created"
+        ],
+        "title": "FeedItemResponse",
+        "description": "Response for feed item."
+      },
+      "FleetAnalysisRequest": {
+        "properties": {
+          "fleet_id": {
+            "type": "string",
+            "title": "Fleet Id",
+            "description": "Fleet identifier"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics",
+            "description": "Specific metrics to analyze"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fleet_id"
+        ],
+        "title": "FleetAnalysisRequest",
+        "description": "Request model for fleet analysis."
+      },
+      "FleetAnalysisResponse": {
+        "properties": {
+          "fleet_id": {
+            "type": "string",
+            "title": "Fleet Id"
+          },
+          "total_vehicles": {
+            "type": "integer",
+            "title": "Total Vehicles"
+          },
+          "active_vehicles": {
+            "type": "integer",
+            "title": "Active Vehicles"
+          },
+          "utilization_rate": {
+            "type": "number",
+            "title": "Utilization Rate",
+            "description": "Percentage 0-100"
+          },
+          "avg_battery_health": {
+            "type": "number",
+            "title": "Avg Battery Health",
+            "description": "Average battery health percentage"
+          },
+          "maintenance_alerts": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Maintenance Alerts"
+          },
+          "key_insights": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Insights"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fleet_id",
+          "total_vehicles",
+          "active_vehicles",
+          "utilization_rate",
+          "avg_battery_health",
+          "maintenance_alerts",
+          "key_insights",
+          "recommendations",
+          "timestamp"
+        ],
+        "title": "FleetAnalysisResponse",
+        "description": "Response model for fleet analysis."
+      },
+      "FleetDistributionRequest": {
+        "properties": {
+          "fleet_id": {
+            "type": "string",
+            "title": "Fleet Id",
+            "description": "Fleet identifier"
+          },
+          "target_locations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Target Locations",
+            "description": "Locations needing vehicles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fleet_id",
+          "target_locations"
+        ],
+        "title": "FleetDistributionRequest",
+        "description": "Request model for fleet distribution optimization."
+      },
+      "FleetDistributionResponse": {
+        "properties": {
+          "fleet_id": {
+            "type": "string",
+            "title": "Fleet Id"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "current_state": {
+            "type": "object",
+            "title": "Current State"
+          },
+          "demand_forecast": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Demand Forecast"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fleet_id",
+          "timestamp",
+          "current_state",
+          "demand_forecast",
+          "recommendations"
+        ],
+        "title": "FleetDistributionResponse",
+        "description": "Response model for fleet distribution plan."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthChallengeResponse": {
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "title": "Challenge Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "challenge_name": {
+            "type": "string",
+            "title": "Challenge Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "progress_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Progress Percent"
+          },
+          "duration_days": {
+            "type": "integer",
+            "title": "Duration Days"
+          },
+          "days_remaining": {
+            "type": "integer",
+            "title": "Days Remaining"
+          },
+          "reward_points": {
+            "type": "integer",
+            "title": "Reward Points"
+          },
+          "difficulty": {
+            "type": "string",
+            "title": "Difficulty",
+            "description": "easy, medium, hard"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge_id",
+          "user_id",
+          "challenge_name",
+          "description",
+          "progress_percent",
+          "duration_days",
+          "days_remaining",
+          "reward_points",
+          "difficulty",
+          "is_active",
+          "timestamp"
+        ],
+        "title": "HealthChallengeResponse",
+        "description": "Response model for health challenges."
+      },
+      "HealthProfileRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "HealthProfileRequest",
+        "description": "Request model for health profile retrieval."
+      },
+      "HealthProfileResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "age_range": {
+            "type": "string",
+            "title": "Age Range"
+          },
+          "bmi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bmi"
+          },
+          "blood_pressure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blood Pressure"
+          },
+          "health_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Health Score"
+          },
+          "medical_conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Medical Conditions"
+          },
+          "medications": {
+            "type": "integer",
+            "title": "Medications"
+          },
+          "last_checkup": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checkup"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "age_range",
+          "bmi",
+          "blood_pressure",
+          "health_score",
+          "medical_conditions",
+          "medications",
+          "last_checkup",
+          "timestamp"
+        ],
+        "title": "HealthProfileResponse",
+        "description": "Response model for health profile - SENSITIVE DATA."
+      },
+      "IntelligentDestinationAlternative": {
+        "properties": {
+          "destination": {
+            "type": "string",
+            "title": "Destination"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "destination",
+          "confidence",
+          "score"
+        ],
+        "title": "IntelligentDestinationAlternative",
+        "description": "Alternative destination ranked by backend AOQ mobility logic."
+      },
+      "IntelligentDestinationAoq": {
+        "properties": {
+          "mobility_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Mobility Score"
+          },
+          "esg_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Esg Score"
+          },
+          "dispatch_recommendation": {
+            "type": "string",
+            "title": "Dispatch Recommendation"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mobility_score",
+          "esg_score",
+          "dispatch_recommendation",
+          "decision",
+          "rationale"
+        ],
+        "title": "IntelligentDestinationAoq",
+        "description": "AOQ decision details for mobility routing and dispatch optimization."
+      },
+      "IntelligentDestinationRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "User Id"
+          },
+          "origin": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Origin"
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Query"
+          },
+          "candidate_destinations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Candidate Destinations"
+          },
+          "trip_history": {
+            "items": {
+              "$ref": "#/components/schemas/DestinationHistoryItem"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Trip History"
+          },
+          "travel_mode": {
+            "type": "string",
+            "enum": [
+              "solo",
+              "family",
+              "eco"
+            ],
+            "title": "Travel Mode",
+            "default": "solo"
+          },
+          "traffic_level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "moderate",
+              "high"
+            ],
+            "title": "Traffic Level",
+            "default": "moderate"
+          },
+          "weather_risk": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Weather Risk",
+            "default": "low"
+          },
+          "battery_level": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Battery Level"
+          },
+          "is_recurring": {
+            "type": "boolean",
+            "title": "Is Recurring",
+            "default": false
+          },
+          "hour_of_day": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 23.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hour Of Day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "origin",
+          "query"
+        ],
+        "title": "IntelligentDestinationRequest",
+        "description": "Request payload for smart destination recommendation."
+      },
+      "IntelligentDestinationResponse": {
+        "properties": {
+          "selected_destination": {
+            "type": "string",
+            "title": "Selected Destination"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/IntelligentDestinationAlternative"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          },
+          "aoq": {
+            "$ref": "#/components/schemas/IntelligentDestinationAoq"
+          },
+          "simulation": {
+            "$ref": "#/components/schemas/IntelligentDestinationSimulation"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "selected_destination",
+          "confidence",
+          "alternatives",
+          "aoq",
+          "simulation",
+          "timestamp"
+        ],
+        "title": "IntelligentDestinationResponse",
+        "description": "Response payload for smart destination recommendation."
+      },
+      "IntelligentDestinationSimulation": {
+        "properties": {
+          "route_id": {
+            "type": "string",
+            "title": "Route Id"
+          },
+          "distance_km": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Distance Km"
+          },
+          "estimated_time_minutes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Estimated Time Minutes"
+          },
+          "estimated_price_xof": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Estimated Price Xof"
+          },
+          "energy_kwh": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Energy Kwh"
+          },
+          "co2_saved_kg": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Co2 Saved Kg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "route_id",
+          "distance_km",
+          "estimated_time_minutes",
+          "estimated_price_xof",
+          "energy_kwh",
+          "co2_saved_kg"
+        ],
+        "title": "IntelligentDestinationSimulation",
+        "description": "Simulation preview returned for selected destination."
+      },
+      "KafkaConsumeResponse": {
+        "properties": {
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          },
+          "scanned": {
+            "type": "integer",
+            "title": "Scanned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "processed",
+          "failed",
+          "skipped",
+          "scanned"
+        ],
+        "title": "KafkaConsumeResponse"
+      },
+      "MaintenancePredictionResponse": {
+        "properties": {
+          "vehicle_id": {
+            "type": "string",
+            "title": "Vehicle Id"
+          },
+          "maintenance_needed": {
+            "type": "boolean",
+            "title": "Maintenance Needed"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority",
+            "description": "low, medium, high, critical"
+          },
+          "predicted_failure_component": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted Failure Component"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          },
+          "days_until_maintenance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Until Maintenance"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "maintenance_needed",
+          "priority",
+          "predicted_failure_component",
+          "recommended_action",
+          "days_until_maintenance",
+          "timestamp"
+        ],
+        "title": "MaintenancePredictionResponse",
+        "description": "Response model for maintenance prediction."
+      },
+      "ModerationCheckRequest": {
+        "properties": {
+          "content_id": {
+            "type": "string",
+            "title": "Content Id",
+            "description": "Content identifier"
+          },
+          "content_text": {
+            "type": "string",
+            "title": "Content Text",
+            "description": "Content to check"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type",
+            "description": "Type of content",
+            "default": "post"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_id",
+          "content_text"
+        ],
+        "title": "ModerationCheckRequest",
+        "description": "Request for content moderation."
+      },
+      "ModerationCheckResponse": {
+        "properties": {
+          "content_id": {
+            "type": "string",
+            "title": "Content Id"
+          },
+          "risk_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Risk Score"
+          },
+          "violation_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Violation Types"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action",
+            "description": "allow, review, remove, block"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_id",
+          "risk_score",
+          "violation_types",
+          "confidence",
+          "recommended_action",
+          "timestamp"
+        ],
+        "title": "ModerationCheckResponse",
+        "description": "Response for moderation check."
+      },
+      "OutboxPublishResponse": {
+        "properties": {
+          "published": {
+            "type": "integer",
+            "title": "Published"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "dlq": {
+            "type": "integer",
+            "title": "Dlq"
+          },
+          "scanned": {
+            "type": "integer",
+            "title": "Scanned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "published",
+          "failed",
+          "dlq",
+          "scanned"
+        ],
+        "title": "OutboxPublishResponse"
+      },
+      "PaymentRecord": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "actor_id",
+          "amount",
+          "currency",
+          "status",
+          "created_at"
+        ],
+        "title": "PaymentRecord"
+      },
+      "PaymentsResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentRecord"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "PaymentsResponse"
+      },
+      "PedometerRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "date_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Date From",
+            "description": "Start date for data retrieval"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date",
+            "title": "Date To",
+            "description": "End date for data retrieval"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "date_from",
+          "date_to"
+        ],
+        "title": "PedometerRequest",
+        "description": "Request model for pedometer data retrieval."
+      },
+      "PedometerResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "steps": {
+            "type": "integer",
+            "title": "Steps"
+          },
+          "distance_km": {
+            "type": "number",
+            "title": "Distance Km"
+          },
+          "calories_burned": {
+            "type": "number",
+            "title": "Calories Burned"
+          },
+          "active_minutes": {
+            "type": "integer",
+            "title": "Active Minutes"
+          },
+          "heart_rate_avg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heart Rate Avg"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "date",
+          "steps",
+          "distance_km",
+          "calories_burned",
+          "active_minutes",
+          "heart_rate_avg",
+          "timestamp"
+        ],
+        "title": "PedometerResponse",
+        "description": "Response model for pedometer data."
+      },
+      "PersonalizedFeedRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Number of items",
+            "default": 20
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "description": "Pagination offset",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "PersonalizedFeedRequest",
+        "description": "Request for personalized feed."
+      },
+      "PersonalizedInsightsResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "pedometer_summary": {
+            "type": "object",
+            "title": "Pedometer Summary"
+          },
+          "health_summary": {
+            "type": "object",
+            "title": "Health Summary"
+          },
+          "esg_summary": {
+            "type": "object",
+            "title": "Esg Summary"
+          },
+          "wellbeing_summary": {
+            "type": "object",
+            "title": "Wellbeing Summary"
+          },
+          "active_challenges": {
+            "type": "integer",
+            "title": "Active Challenges"
+          },
+          "next_milestone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Milestone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "generated_at",
+          "pedometer_summary",
+          "health_summary",
+          "esg_summary",
+          "wellbeing_summary",
+          "active_challenges",
+          "next_milestone"
+        ],
+        "title": "PersonalizedInsightsResponse",
+        "description": "Response model for personalized ESG and health insights."
+      },
+      "RecommendationRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "recommendation_type": {
+            "type": "string",
+            "title": "Recommendation Type",
+            "description": "content, users, communities",
+            "default": "content"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Number of recommendations",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "RecommendationRequest",
+        "description": "Request for recommendations."
+      },
+      "RecommendationResponse": {
+        "properties": {
+          "recommendation_id": {
+            "type": "string",
+            "title": "Recommendation Id"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id"
+          },
+          "recommendation_type": {
+            "type": "string",
+            "title": "Recommendation Type"
+          },
+          "confidence_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Confidence Score"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recommendation_id",
+          "target_id",
+          "recommendation_type",
+          "confidence_score",
+          "reason",
+          "timestamp"
+        ],
+        "title": "RecommendationResponse",
+        "description": "Response for recommendation."
+      },
+      "RegisterRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 3,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "RegisterRequest"
+      },
+      "RouteRequest": {
+        "properties": {
+          "origin": {
+            "type": "string",
+            "title": "Origin",
+            "description": "Starting location"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination",
+            "description": "Ending location"
+          },
+          "vehicle_type": {
+            "type": "string",
+            "title": "Vehicle Type",
+            "description": "Type of vehicle",
+            "default": "ebike"
+          },
+          "battery_level": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Battery Level",
+            "description": "Current battery percentage 0-100"
+          },
+          "max_time_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Time Minutes",
+            "description": "Maximum travel time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origin",
+          "destination"
+        ],
+        "title": "RouteRequest",
+        "description": "Request model for route optimization."
+      },
+      "RouteResponse": {
+        "properties": {
+          "route_id": {
+            "type": "string",
+            "title": "Route Id"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination"
+          },
+          "vehicle_type": {
+            "type": "string",
+            "title": "Vehicle Type"
+          },
+          "distance_km": {
+            "type": "number",
+            "title": "Distance Km"
+          },
+          "estimated_time_minutes": {
+            "type": "integer",
+            "title": "Estimated Time Minutes"
+          },
+          "energy_consumption_kwh": {
+            "type": "number",
+            "title": "Energy Consumption Kwh"
+          },
+          "waypoints": {
+            "items": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Waypoints"
+          },
+          "efficiency_score": {
+            "type": "number",
+            "title": "Efficiency Score"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "route_id",
+          "origin",
+          "destination",
+          "vehicle_type",
+          "distance_km",
+          "estimated_time_minutes",
+          "energy_consumption_kwh",
+          "waypoints",
+          "efficiency_score",
+          "timestamp"
+        ],
+        "title": "RouteResponse",
+        "description": "Response model for optimized route."
+      },
+      "RuleResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold"
+          },
+          "weight_fintech": {
+            "type": "number",
+            "title": "Weight Fintech"
+          },
+          "weight_mobility": {
+            "type": "number",
+            "title": "Weight Mobility"
+          },
+          "weight_esg": {
+            "type": "number",
+            "title": "Weight Esg"
+          },
+          "weight_social": {
+            "type": "number",
+            "title": "Weight Social"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "threshold",
+          "weight_fintech",
+          "weight_mobility",
+          "weight_esg",
+          "weight_social",
+          "active",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RuleResponse"
+      },
+      "RuleSchema": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "threshold": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Threshold"
+          },
+          "weight_fintech": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight Fintech",
+            "default": 0.35
+          },
+          "weight_mobility": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight Mobility",
+            "default": 0.25
+          },
+          "weight_esg": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight Esg",
+            "default": 0.25
+          },
+          "weight_social": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight Social",
+            "default": 0.15
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "threshold"
+        ],
+        "title": "RuleSchema"
+      },
+      "SentimentAnalysisRequest": {
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "title": "Community Id",
+            "description": "Community identifier"
+          },
+          "period_days": {
+            "type": "integer",
+            "title": "Period Days",
+            "description": "Analysis period",
+            "default": 7
+          }
+        },
+        "type": "object",
+        "required": [
+          "community_id"
+        ],
+        "title": "SentimentAnalysisRequest",
+        "description": "Request for sentiment analysis."
+      },
+      "SentimentAnalysisResponse": {
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "title": "Community Id"
+          },
+          "overall_sentiment": {
+            "type": "string",
+            "title": "Overall Sentiment",
+            "description": "positive, neutral, negative"
+          },
+          "sentiment_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": -100.0,
+            "title": "Sentiment Score"
+          },
+          "emotion_breakdown": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Emotion Breakdown"
+          },
+          "key_topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Topics"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "community_id",
+          "overall_sentiment",
+          "sentiment_score",
+          "emotion_breakdown",
+          "key_topics",
+          "timestamp"
+        ],
+        "title": "SentimentAnalysisResponse",
+        "description": "Response for sentiment analysis."
+      },
+      "SignalRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "User Id"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Source",
+            "default": "mobile"
+          },
+          "features": {
+            "$ref": "#/components/schemas/AoqFeatures"
+          },
+          "metadata": {
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "features"
+        ],
+        "title": "SignalRequest"
+      },
+      "SignalResponse": {
+        "properties": {
+          "signal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Signal Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "signal_id",
+          "user_id",
+          "source",
+          "created_at"
+        ],
+        "title": "SignalResponse"
+      },
+      "SustainabilityIndicatorsRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "SustainabilityIndicatorsRequest",
+        "description": "Request model for sustainability indicators."
+      },
+      "SustainabilityIndicatorsResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "carbon_footprint_kg": {
+            "type": "number",
+            "title": "Carbon Footprint Kg"
+          },
+          "green_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Green Score"
+          },
+          "renewable_energy_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Renewable Energy Percent"
+          },
+          "waste_reduction_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Waste Reduction Score"
+          },
+          "sustainable_transport_percent": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Sustainable Transport Percent"
+          },
+          "community_impact_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Community Impact Score"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "carbon_footprint_kg",
+          "green_score",
+          "renewable_energy_percent",
+          "waste_reduction_score",
+          "sustainable_transport_percent",
+          "community_impact_score",
+          "timestamp"
+        ],
+        "title": "SustainabilityIndicatorsResponse",
+        "description": "Response model for sustainability indicators."
+      },
+      "TransactionRequest": {
+        "properties": {
+          "actor_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Actor Id"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 8,
+            "minLength": 3,
+            "title": "Currency",
+            "default": "XOF"
+          },
+          "target_account": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Target Account"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actor_id",
+          "amount",
+          "target_account"
+        ],
+        "title": "TransactionRequest"
+      },
+      "TransactionResponse": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "risk_score": {
+            "type": "number",
+            "title": "Risk Score"
+          },
+          "aml_flagged": {
+            "type": "boolean",
+            "title": "Aml Flagged"
+          },
+          "correlation_id": {
+            "type": "string",
+            "title": "Correlation Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "status",
+          "risk_score",
+          "aml_flagged",
+          "correlation_id"
+        ],
+        "title": "TransactionResponse"
+      },
+      "TrendingContentResponse": {
+        "properties": {
+          "content_id": {
+            "type": "string",
+            "title": "Content Id"
+          },
+          "author_id": {
+            "type": "string",
+            "title": "Author Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "trend_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Trend Score"
+          },
+          "engagement_count": {
+            "type": "integer",
+            "title": "Engagement Count"
+          },
+          "growth_rate": {
+            "type": "number",
+            "title": "Growth Rate"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_id",
+          "author_id",
+          "title",
+          "category",
+          "trend_score",
+          "engagement_count",
+          "growth_rate",
+          "timestamp"
+        ],
+        "title": "TrendingContentResponse",
+        "description": "Response for trending content."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VehicleStatusResponse": {
+        "properties": {
+          "vehicle_id": {
+            "type": "string",
+            "title": "Vehicle Id"
+          },
+          "vehicle_type": {
+            "type": "string",
+            "title": "Vehicle Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "available, in_use, maintenance, offline"
+          },
+          "battery_level": {
+            "type": "number",
+            "title": "Battery Level",
+            "description": "Battery percentage 0-100"
+          },
+          "location": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Location",
+            "description": "GPS coordinates {lat, lng}"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_id",
+          "vehicle_type",
+          "status",
+          "battery_level",
+          "location",
+          "available",
+          "last_updated"
+        ],
+        "title": "VehicleStatusResponse",
+        "description": "Response model for vehicle status."
+      },
+      "WellbeingScoreRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "WellbeingScoreRequest",
+        "description": "Request model for wellbeing score."
+      },
+      "WellbeingScoreResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "physical_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Physical Score"
+          },
+          "mental_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Mental Score"
+          },
+          "social_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Social Score"
+          },
+          "spiritual_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Spiritual Score"
+          },
+          "overall_wellbeing": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Overall Wellbeing"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "physical_score",
+          "mental_score",
+          "social_score",
+          "spiritual_score",
+          "overall_wellbeing",
+          "recommendations",
+          "timestamp"
+        ],
+        "title": "WellbeingScoreResponse",
+        "description": "Response model for wellbeing score."
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

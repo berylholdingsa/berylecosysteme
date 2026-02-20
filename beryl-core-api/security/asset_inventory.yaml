@@ -1,0 +1,28 @@
+version: 1.0
+updated_at: 2026-02-11
+assets:
+  - id: AST-APP-API
+    name: beryl-core-api
+    classification: Sensitive
+    owner: platform-team
+    description: FastAPI orchestration and fintech processing service
+  - id: AST-DB-LEDGER
+    name: postgres-ledger
+    classification: Financial
+    owner: fintech-team
+    description: Ledger, idempotency, audit chain, suspicious activity records
+  - id: AST-KAFKA-BUS
+    name: kafka-cluster
+    classification: Sensitive
+    owner: platform-team
+    description: Event streaming transport for fintech/audit/compliance events
+  - id: AST-REDIS-SEC
+    name: redis-security
+    classification: Internal
+    owner: security-team
+    description: Rate limit and nonce replay prevention store
+  - id: AST-OBS-STACK
+    name: observability-stack
+    classification: Internal
+    owner: sre-team
+    description: Prometheus + Jaeger telemetry and alerts

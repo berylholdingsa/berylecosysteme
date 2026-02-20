@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beryl-core-api
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: beryl-core-api
+  template:
+    metadata:
+      labels:
+        app: beryl-core-api
+    spec:
+      containers:
+      - name: beryl-core-api
+        image: beryl-core-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENV
+          value: "production"
+        - name: OTEL_TRACES_EXPORTER
+          value: "jaeger"
+        - name: OTEL_METRICS_EXPORTER
+          value: "prometheus"
+        - name: JAEGER_ENDPOINT
+          value: "http://jaeger-collector:14268/api/traces"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: beryl-core-api
+  namespace: default
+spec:
+  selector:
+    app: beryl-core-api
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: beryl-core-api-ingress
+  namespace: default
+spec:
+  rules:
+  - host: api.beryl.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: beryl-core-api
+            port:
+              number: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: beryl-core-api-netpol
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: beryl-core-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: jaeger
+    ports:
+    - protocol: TCP
+      port: 14268
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53

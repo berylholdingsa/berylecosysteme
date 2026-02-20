@@ -1,0 +1,22 @@
+{
+  "fraud_scenarios": [
+    {
+      "scenario_id": "fraud-001",
+      "pattern": "account_takeover",
+      "signal": "device_fingerprint_change",
+      "expected_action": "step_up_auth"
+    },
+    {
+      "scenario_id": "fraud-002",
+      "pattern": "smurfing",
+      "signal": "many_small_transfers",
+      "expected_action": "aml_flag"
+    },
+    {
+      "scenario_id": "fraud-003",
+      "pattern": "merchant_refund_loop",
+      "signal": "rapid_refund_reissue",
+      "expected_action": "block_and_investigate"
+    }
+  ]
+}

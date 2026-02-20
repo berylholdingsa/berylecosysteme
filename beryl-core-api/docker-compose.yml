@@ -1,0 +1,12 @@
+services:
+  frontend:
+    image: node:20-bullseye
+    container_name: beryl_app
+    working_dir: /app
+    volumes:
+      - ./beryl-app:/app
+    command: bash -c "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development

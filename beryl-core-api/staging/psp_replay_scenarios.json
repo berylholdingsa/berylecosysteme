@@ -1,0 +1,28 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "psp-replay-001",
+      "description": "Same nonce and timestamp sent twice",
+      "notification": {
+        "payment_id": "pay-sim-001",
+        "status": "SUCCESS",
+        "nonce": "nonce-fixed-001",
+        "timestamp": 1736352000
+      },
+      "expected_first_call": 200,
+      "expected_second_call": 409
+    },
+    {
+      "scenario_id": "psp-replay-002",
+      "description": "Duplicate PSP event id with altered payload",
+      "notification": {
+        "payment_id": "pay-sim-002",
+        "status": "SUCCESS",
+        "nonce": "nonce-fixed-002",
+        "timestamp": 1736352060
+      },
+      "expected_first_call": 200,
+      "expected_second_call": 409
+    }
+  ]
+}
