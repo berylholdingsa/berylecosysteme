@@ -30,7 +30,10 @@ class AuditLogger:
             self.logger.removeHandler(handler)
 
         # Add audit-specific handler
-        audit_handler = logging.FileHandler(settings.audit_log_file)
+        audit_log_path = Path(settings.audit_log_file)
+        if audit_log_path.parent:
+            audit_log_path.parent.mkdir(parents=True, exist_ok=True)
+        audit_handler = logging.FileHandler(audit_log_path)
         audit_handler.setFormatter(AuditFormatter())
         self.logger.addHandler(audit_handler)
 

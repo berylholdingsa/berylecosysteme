@@ -7,6 +7,7 @@ Initializes logging, metrics, tracing, and audit systems based on configuration.
 import os
 import logging
 from typing import Optional
+from pathlib import Path
 
 from src.config.settings import settings
 from src.observability.logging.logger import logger as beryl_logger
@@ -103,11 +104,12 @@ class ObservabilityBootstrap:
 
         try:
             # Ensure audit log directory exists
-            audit_log_path = settings.audit_log_file
-            os.makedirs(os.path.dirname(audit_log_path), exist_ok=True)
+            audit_log_path = Path(settings.audit_log_file)
+            if audit_log_path.parent and str(audit_log_path.parent) not in {".", ""}:
+                audit_log_path.parent.mkdir(parents=True, exist_ok=True)
 
             self.logger.info("Audit logging initialized",
-                           audit_log_file=audit_log_path)
+                           audit_log_file=str(audit_log_path))
         except Exception as e:
             self.logger.error(f"Failed to initialize audit logging: {e}")
 
