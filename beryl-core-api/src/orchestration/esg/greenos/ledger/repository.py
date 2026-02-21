@@ -11,6 +11,7 @@ from sqlalchemy import Select, and_, desc, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import OperationalError
 
 from src.db.models.esg_greenos import EsgImpactLedgerModel
 from src.db.sqlalchemy import Base, get_engine, get_session_local
@@ -57,7 +58,13 @@ class ImpactLedgerRepository:
 
     def __init__(self, session_factory: SessionFactory | None = None) -> None:
         self._session_factory = session_factory or get_session_local()
-        Base.metadata.create_all(bind=get_engine(), tables=[EsgImpactLedgerModel.__table__], checkfirst=True)
+        try:
+            Base.metadata.create_all(bind=get_engine(), tables=[EsgImpactLedgerModel.__table__], checkfirst=True)
+        except OperationalError as exc:
+            logger.warning(
+                "event=greenos_impact_ledger_bootstrap_skipped",
+                reason=str(exc),
+            )
 
     @property
     def session_factory(self) -> SessionFactory:
